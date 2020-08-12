@@ -1,0 +1,97 @@
+
+%name-prefix="yy_alt_"
+
+%{
+
+#include "geo_parse_types.h"
+#include <math.h>
+#include <stdio.h>
+
+#define YYPRINT(file, type, value)	fprintf(file, "%s", yy_alt_text)
+
+extern const char* yy_alt_text;
+extern int yyerror(const char* msg);
+extern int yylex();
+
+Altitude_struct altitude_parse_result;
+
+static void assign_gnd(Altitude_struct& altitude, float number);
+static void assign_msl(Altitude_struct& altitude, float number);
+static void assign_fl(Altitude_struct& altitude, float number);
+
+%}
+
+%locations
+
+%token START_ALTITUDE
+%token INTEGER
+%token REAL
+%token UNLIMITED
+%token GND
+%token MSL
+%token FL
+%token FEET
+%token METER
+
+%union {
+	Altitude_struct altitude;
+	int int_value;
+	float real_value;
+}
+
+%type <altitude>   altitude;
+%type <real_value> number
+%type <int_value>  integer
+%type <real_value> real
+
+%start start
+
+%%
+
+start
+	: START_ALTITUDE altitude { altitude_parse_result = $2; }
+	;
+
+altitude
+	: UNLIMITED
+	| number GND { assign_gnd($$, $1); }
+	| number MSL { assign_msl($$, $1); }
+	;
+
+number
+	: integer { $$ = $1; }
+	| real { $$ = $1; }
+	;
+
+integer
+	: INTEGER { $$ = atoi(yy_alt_text); }
+	;
+
+real
+	: REAL { $$ = atof(yy_alt_text); }
+	;
+
+%%
+
+static void assign_gnd(Altitude_struct& altitude, float number)
+{
+	altitude.reference = gnd;
+	altitude.value = number;
+}
+
+static void assign_msl(Altitude_struct& altitude, float number)
+{
+	altitude.reference = msl;
+	altitude.value = number;
+}
+
+static void assign_fl(Altitude_struct& altitude, float number)
+{
+	altitude.reference = fl;
+	altitude.value = number;
+}
+
+int yy_alt_error(const char* msg)
+{
+	return 0;
+}

@@ -1,0 +1,110 @@
+
+%option prefix="yy_coord_"
+
+%{
+
+#include "stdafx.h"
+#include "geo_parse_types.h"
+#include "geo_coordinate_parser.tab.h"
+#include <assert.h>
+
+#if YYDEBUG
+extern int yy_coord_debug;
+#endif
+extern int yy_coord_parse();
+
+static int start_token;	// token used to select start symbol in grammar
+
+%}
+
+whitespace			[ \t\f\n\r]
+digit				[0-9]
+dot					\.
+integer				[+-]?{digit}+
+real				[+-]?({digit}*{dot}{digit}+|{digit}+{dot}{digit}*)
+degree				\xc2\xb0
+
+%%
+
+%{
+
+if (start_token) {
+	int t = start_token;
+	start_token = 0;
+	return t;
+}
+
+%}
+
+{integer}			{ return INTEGER; }
+{real}				{ return REAL; }
+{degree}			{ return DEGREE; }
+{whitespace}		{ /* skip */ }
+.					{ return *yytext; }
+
+%%
+
+int yywrap()
+{
+	return 1;
+}
+
+int parse_geo_latitude(const char* s)
+{
+#if YYDEBUG
+	yy_coord_debug = 0;
+#endif
+	start_token = START_LATITUDE;
+	YY_BUFFER_STATE state = yy_scan_string(s);
+	yy_switch_to_buffer(state);
+	int result = yy_coord_parse();
+	yy_delete_buffer(state);
+	return result;
+}
+
+int parse_geo_longitude(const char* s)
+{
+#if YYDEBUG
+	yy_coord_debug = 0;
+#endif
+	start_token = START_LONGITUDE;
+	YY_BUFFER_STATE state = yy_scan_string(s);
+	yy_switch_to_buffer(state);
+	int result = yy_coord_parse();
+	yy_delete_buffer(state);
+	return result;
+}
+
+int parse_geo_coordinate(const char* s)
+{
+#if YYDEBUG
+	yy_coord_debug = 0;
+#endif
+	start_token = START_COORDINATES;
+	YY_BUFFER_STATE state = yy_scan_string(s);
+	yy_switch_to_buffer(state);
+	int result = yy_coord_parse();
+	yy_delete_buffer(state);
+	return result;
+}
+
+void geo_coordinate_test_coord(const char* s)
+{
+	start_token = START_COORDINATES;
+	YY_BUFFER_STATE state = yy_scan_string(s);
+	yy_switch_to_buffer(state);
+	int result = yy_coord_parse();
+	yy_delete_buffer(state);
+	assert(result == 0);
+}
+
+void geo_coordinate_test()
+{
+#if YYDEBUG
+	yy_coord_debug = 1;
+#endif
+	geo_coordinate_test_coord("N 35° 3' 10.1 sec E 22 deg 2 min 1");
+	geo_coordinate_test_coord("33 3' 3\" N 22 2' 12\" W");
+    geo_coordinate_test_coord("N 30 E 22");
+    geo_coordinate_test_coord("52.0,-120.3");
+}

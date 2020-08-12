@@ -1,0 +1,189 @@
+
+%{
+
+#pragma warning (disable : 4005)
+
+#include "stdafx.h"
+#include "util_string.h"
+#include <ctype.h>
+#include <string>
+#include <sstream>
+#include <iostream>
+
+using namespace SOFTHUB::UTIL;
+using namespace std;
+
+%}
+
+ub          [\x80-\xBF]
+up          [\x80-\x9E]
+lo          [\x9F-\xBF]
+cp1         [\xC0-\xDF]
+cp2         [\xE0-\xEF]
+cp3         [\xF0-\xF7]
+cp4         [\xF8-\xFB]
+cp5         [\xFC-\xFD]
+u1          {cp1}{ub}
+u2          {cp2}{ub}{ub}
+u3          {cp3}{ub}{ub}{ub}
+u4          {cp4}{ub}{ub}{ub}{ub}
+u5          {cp5}{ub}{ub}{ub}{ub}{ub}
+u           {u1}|{u2}|{u3}|{u4}|{u5}
+alpha-up    [A-Z]
+alpha-lo    [a-z]
+
+%option prefix="yy_string_" yylineno noyywrap nounput noinput reentrant extra-type="String_state*" stack
+%x lo up su sb stop
+
+%%
+
+<lo>{alpha-up}          { *yyextra << (char) (yytext[0] + 0x20); }
+<lo>\xC3{up}            { *yyextra << yytext[0]; *yyextra << (char) ((yytext[1] & 0xff) + 0x20); }
+<lo>{u}                 { *yyextra << yytext; }
+<lo>\n                  { *yyextra << yytext; }
+<lo>.                   { *yyextra << yytext; }
+
+<up>{alpha-lo}          { *yyextra << (char) (yytext[0] - 0x20); }
+<up>\xC3{lo}            { *yyextra << yytext[0]; *yyextra << (char) ((yytext[1] & 0xff) - 0x20); }
+<up>{u}                 { *yyextra << yytext; }
+<up>\n                  { *yyextra << yytext; }
+<up>.                   { *yyextra << yytext; }
+
+<su>\xC3\x80            { *yyextra << "A"; /* Agrave */ }
+<su>\xC3\x81            { *yyextra << "A"; /* Aacute */ }
+<su>\xC3\x82            { *yyextra << "A"; /* Acirc */ }
+<su>\xC3\x83            { *yyextra << "A"; /* Atilde */ }
+<su>\xC3\x84            { *yyextra << "Ae"; /* Auml */ }
+<su>\xC3\xA0            { *yyextra << "a"; /* agrave */ }
+<su>\xC3\xA1            { *yyextra << "a"; /* aacute */ }
+<su>\xC3\xA2            { *yyextra << "a"; /* acirc */ }
+<su>\xC3\xA3            { *yyextra << "a"; /* atilde */ }
+<su>\xC3\xA4            { *yyextra << "ae"; /* auml */ }
+
+<su>\xC3\x88            { *yyextra << "E"; /* Egrave */ }
+<su>\xC3\x89            { *yyextra << "E"; /* Eacute */ }
+<su>\xC3\x8A            { *yyextra << "E"; /* Ecirc */ }
+<su>\xC3\x8B            { *yyextra << "E"; /* Euml */ }
+<su>\xC3\xA8            { *yyextra << "e"; /* egrave */ }
+<su>\xC3\xA9            { *yyextra << "e"; /* eacute */ }
+<su>\xC3\xAA            { *yyextra << "e"; /* ecirc */ }
+<su>\xC3\xAB            { *yyextra << "e"; /* euml */ }
+
+<su>\xC3\x8C            { *yyextra << "I"; /* Igrave */ }
+<su>\xC3\x8D            { *yyextra << "I"; /* Iacute */ }
+<su>\xC3\x8E            { *yyextra << "I"; /* Icirc */ }
+<su>\xC3\x8F            { *yyextra << "I"; /* Iuml */ }
+<su>\xC3\xAC            { *yyextra << "i"; /* igrave */ }
+<su>\xC3\xAD            { *yyextra << "i"; /* iacute */ }
+<su>\xC3\xAE            { *yyextra << "i"; /* icirc */ }
+<su>\xC3\xAF            { *yyextra << "i"; /* iuml */ }
+
+<su>\xC3\x92            { *yyextra << "O"; /* Ograve */ }
+<su>\xC3\x93            { *yyextra << "O"; /* Oacute */ }
+<su>\xC3\x94            { *yyextra << "O"; /* Ocirc */ }
+<su>\xC3\x95            { *yyextra << "O"; /* Otilde */ }
+<su>\xC3\x96            { *yyextra << "Oe"; /* Ouml */ }
+<su>\xC3\xB2            { *yyextra << "o"; /* ograve */ }
+<su>\xC3\xB3            { *yyextra << "o"; /* oacute */ }
+<su>\xC3\xB4            { *yyextra << "o"; /* ocirc */ }
+<su>\xC3\xB5            { *yyextra << "o"; /* otilde */ }
+<su>\xC3\xB6            { *yyextra << "oe"; /* ouml */ }
+
+<su>\xC3\x99            { *yyextra << "U"; /* Ugrave */ }
+<su>\xC3\x9A            { *yyextra << "U"; /* Uacute */ }
+<su>\xC3\x9B            { *yyextra << "U"; /* Ucirc */ }
+<su>\xC3\x9C            { *yyextra << "Ue"; /* Uuml */ }
+<su>\xC3\xB9            { *yyextra << "u"; /* ugrave */ }
+<su>\xC3\xBA            { *yyextra << "u"; /* uacute */ }
+<su>\xC3\xBB            { *yyextra << "u"; /* ucirc */ }
+<su>\xC3\xBC            { *yyextra << "ue"; /* uuml */ }
+
+<su>\xC3\x9F            { *yyextra << "ss"; }
+
+<su>{u}                 { *yyextra << yytext; }
+<su>\n                  { *yyextra << yytext; }
+<su>.                   { *yyextra << yytext[0]; }
+
+<sb>{u}                 { *yyextra << yytext; }
+<sb>\n                  { *yyextra << yytext[0]; }
+<sb>.                   { *yyextra << yytext[0]; }
+
+<stop>.                 { return 0; }
+
+%%
+
+namespace SOFTHUB {
+namespace UTIL {
+
+void String_state::initialize()
+{
+    yylex_init_extra(this, &scanner);
+}
+
+void String_state::finalize()
+{
+    yylex_destroy(scanner);
+}
+
+size_t String_state::scan(string& s, int start)
+{
+    this->str = &s;
+    yy_push_state(start, scanner);
+    YY_BUFFER_STATE buf = yy_scan_string(s.c_str() + head, scanner);
+    yy_string_lex(scanner);
+    yy_delete_buffer(buf, scanner);
+    return byte_index - head;
+}
+
+size_t String_state::to_lower_case(string& s, size_t idx, size_t cnt)
+{
+    head = idx;
+    byte_index = idx;
+    char_index = 0;
+    char_count = cnt;
+    return scan(s, lo);
+}
+
+size_t String_state::to_upper_case(string& s, size_t idx, size_t cnt)
+{
+    head = idx;
+    byte_index = idx;
+    char_index = 0;
+    char_count = cnt;
+    return scan(s, up);
+}
+
+size_t String_state::substitute_umlauts(string& s, size_t idx, size_t cnt)
+{
+    head = idx;
+    byte_index = idx;
+    char_index = 0;
+    char_count = cnt;
+    return scan(s, su);
+}
+
+size_t String_state::substring(string& s, size_t idx, size_t cnt)
+{
+    head = idx;
+    byte_index = idx;
+    char_index = 0;
+    char_count = cnt;
+    return scan(s, sb);
+}
+
+size_t String_state::next(const string& s, size_t idx)
+{
+    string cs(s);
+    head = idx;
+//  byte_index = idx;
+    char_index = 0;
+    char_count = 1;
+    return scan(cs, sb);
+}
+
+void String_state::stop_scan()
+{
+    yy_push_state(stop, scanner);
+}
+
+}}

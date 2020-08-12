@@ -1,0 +1,207 @@
+
+%name-prefix="yy_coord_"
+
+%{
+
+#include "geo_parse_types.h"
+#include <math.h>
+#include <stdio.h>
+
+#define YYPRINT(file, type, value)   fprintf(file, "%s", yy_coord_text)
+
+extern const char* yy_coord_text;
+extern int yyerror(const char* msg);
+extern int yylex();
+
+Coordinate_struct coord_parse_result[2];
+
+static void assign_parse_result(const Coordinate_struct& latitude, const Coordinate_struct& longitude);
+static void assign_geo_coordinate(Coordinate_struct& coordinate, double degrees);
+static void assign_geo_coordinate(Coordinate_struct& coordinate, int degrees, double minutes);
+static void assign_geo_coordinate(Coordinate_struct& coordinate, int degrees, int minutes, double seconds);
+static void assign_hemisphere(Coordinate_struct& coordinate, char hemisphere);
+static void normalize_hemisphere_lat(Coordinate_struct& coordinate);
+static void normalize_hemisphere_lon(Coordinate_struct& coordinate);
+
+%}
+
+%locations
+
+%token START_COORDINATES
+%token START_LATITUDE
+%token START_LONGITUDE
+%token INTEGER
+%token REAL
+%token DEGREE
+
+%union {
+	Coordinate_struct coordinate;
+	int int_value;
+	double real_value;
+	char hemisphere;
+}
+
+%type <coordinate> latitude
+%type <coordinate> longitude
+%type <coordinate> geo_coordinate
+%type <coordinate> geo_coordinate_with_minutes
+%type <coordinate> geo_coordinate_with_minutes_and_seconds
+%type <real_value> number
+%type <int_value>  integer
+%type <real_value> real
+%type <hemisphere> latitude_hemisphere
+%type <hemisphere> longitude_hemisphere
+
+%start start
+
+%%
+
+start
+	: START_COORDINATES coordinates
+	| START_LATITUDE latitude   { coord_parse_result[0] = $2; }
+	| START_LONGITUDE longitude { coord_parse_result[1] = $2; }
+	;
+
+coordinates
+	: latitude optional_separator longitude { assign_parse_result($1, $3); }
+	| longitude optional_separator latitude { assign_parse_result($3, $1); }
+	;
+
+latitude
+	: latitude_hemisphere geo_coordinate { assign_hemisphere($2, $1); $$ = $2; }
+    | geo_coordinate latitude_hemisphere { assign_hemisphere($1, $2); $$ = $1; }
+    | geo_coordinate { normalize_hemisphere_lat($1); $$ = $1; }
+	;
+
+longitude
+	: longitude_hemisphere geo_coordinate { assign_hemisphere($2, $1); $$ = $2; }
+    | geo_coordinate longitude_hemisphere { assign_hemisphere($1, $2); $$ = $1; }
+    | geo_coordinate { normalize_hemisphere_lon($1); $$ = $1; }
+	;
+
+geo_coordinate
+	: number { assign_geo_coordinate($$, $1); }
+	| number degrees { assign_geo_coordinate($$, $1); }
+	| geo_coordinate_with_minutes
+	| geo_coordinate_with_minutes_and_seconds
+	;
+
+geo_coordinate_with_minutes
+	: integer number { assign_geo_coordinate($$, $1, $2); }
+	| integer number minutes { assign_geo_coordinate($$, $1, $2); }
+	| integer degrees number minutes { assign_geo_coordinate($$, $1, $3); }
+	;
+
+geo_coordinate_with_minutes_and_seconds
+	: integer integer number { assign_geo_coordinate($$, $1, $2, $3); }
+	| integer integer number seconds { assign_geo_coordinate($$, $1, $2, $3); }
+	| integer integer minutes number { assign_geo_coordinate($$, $1, $2, $4); }
+	| integer integer minutes number seconds { assign_geo_coordinate($$, $1, $2, $4); }
+	| integer degrees integer number { assign_geo_coordinate($$, $1, $3, $4); }
+	| integer degrees integer minutes number { assign_geo_coordinate($$, $1, $3, $5); }
+	| integer degrees integer number seconds { assign_geo_coordinate($$, $1, $3, $4); }
+	| integer degrees integer minutes number seconds { assign_geo_coordinate($$, $1, $3, $5); }
+	;
+
+latitude_hemisphere
+	: 'N' { $$ = 'N'; }
+	| 'S' { $$ = 'S'; }
+	;
+
+longitude_hemisphere
+	: 'E' { $$ = 'E'; }
+	| 'W' { $$ = 'W'; }
+	;
+
+number
+	: integer { $$ = $1; }
+	| real { $$ = $1; }
+	;
+
+integer
+	: INTEGER { $$ = atoi(yy_coord_text); }
+	;
+
+real
+	: REAL { $$ = atof(yy_coord_text); }
+	;
+
+degrees
+	: 'd' 'e' 'g'
+	| DEGREE
+	;
+
+minutes
+	: 'm' 'i' 'n'
+	| '\''
+	;
+
+seconds
+	: 's' 'e' 'c'
+	| '\"'
+	;
+
+optional_separator
+    : ','
+    | ';'
+    | ':'
+    |
+    ;
+
+%%
+
+static void assign_parse_result(const Coordinate_struct& latitude, const Coordinate_struct& longitude)
+{
+	coord_parse_result[0] = latitude;
+	coord_parse_result[1] = longitude;
+}
+
+static void assign_geo_coordinate(Coordinate_struct& coordinate, double degrees)
+{
+	double abs_degree = fabs(degrees);
+	int h = (int) floor(abs_degree);
+	double minutes = (abs_degree - h) * 60;
+	int m = (int) floor(minutes);
+	double s = (minutes - m) * 60;
+	coordinate.hours = int(degrees);
+	coordinate.minutes = m;
+	coordinate.seconds = float(s);
+}
+
+static void assign_geo_coordinate(Coordinate_struct& coordinate, int degrees, double minutes)
+{
+	int m = (int) floor(minutes);
+	double s = (minutes - m) * 60;
+	coordinate.hours = int(degrees);
+	coordinate.minutes = m;
+	coordinate.seconds = float(s);
+}
+
+static void assign_geo_coordinate(Coordinate_struct& coordinate, int degrees, int minutes, double seconds)
+{
+	coordinate.hours = int(degrees);
+	coordinate.minutes = int(minutes);
+	coordinate.seconds = float(seconds);
+}
+
+static void assign_hemisphere(Coordinate_struct& coordinate, char hemisphere)
+{
+	coordinate.hemisphere = hemisphere;
+}
+
+static void normalize_hemisphere_lat(Coordinate_struct& coordinate)
+{
+    coordinate.hemisphere = coordinate.hours >= 0 ? 'N' : 'S';
+    coordinate.hours = abs(coordinate.hours);
+}
+
+static void normalize_hemisphere_lon(Coordinate_struct& coordinate)
+{
+    coordinate.hemisphere = coordinate.hours >= 0 ? 'E' : 'W';
+    coordinate.hours = abs(coordinate.hours);
+}
+
+int yyerror(const char* msg)
+{
+	return 0;
+}
