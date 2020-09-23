@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void log_message(Log_level level, char const* msg)
+void log_message(Log_level level, const string& msg)
 {
     switch (level) {
     case ERR:

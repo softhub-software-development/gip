@@ -184,8 +184,7 @@ void dbg_statistics()
     stringstream stream;
     int leaks = dbg_leak_count();
     stream << "stored: " << allocations->size() << " allocated: " << alloc_count << " free'd: " << free_count << " leaks: " << leaks << endl;
-    msg = stream.str();
-    log_message(WARN, msg.c_str());
+    log_message(WARN, stream.str());
     stream.str("");
     int count = 0;
     Allocations::const_iterator it = allocations->begin();
@@ -196,8 +195,7 @@ void dbg_statistics()
         stream << count << " id: " << data->id << " size: " << data->size << " ";
         dbg_print_ptr(stream, ptr, (int) data->size);
         stream << endl;
-        msg = stream.str();
-        log_message(WARN, msg.c_str());
+        log_message(WARN, stream.str());
         stream.str("");
         count++;
     }

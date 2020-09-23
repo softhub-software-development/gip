@@ -130,7 +130,7 @@ Http_response_ref Http_connection::redirect(const Http_request* request, Http_re
         header = response->get_header();
         code = header->get_response_code();
 #ifdef _DEBUG
-        clog << "redirected " << url->to_string() << " to " << location << " [" << code << "]" << endl;
+        cout << "redirected " << url->to_string() << " to " << location << " [" << code << "]" << endl;
 #endif
         socket->close();
     }

@@ -111,7 +111,7 @@ void Geo_ip_server::serve_echo(const Http_service_request* sreq, Http_service_re
 {
     const Url_parameter_map& parameter_map = sreq->get_parameter_map();
     const string& message = parameter_map.get("message");
-    clog << "echo request for " << message << endl;
+    clog << "echo request for \"" << message << "\"" << endl;
     serve_content(message, "text/html", sres);
 }
 

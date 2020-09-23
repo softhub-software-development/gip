@@ -123,12 +123,14 @@ static void test_coordinates()
 
 void Geo_module::test()
 {
-#ifdef NO_GEO_PARSER
     Address_ref ip = Address::create("91.64.54.207", 0);
-    const Geo_ip_database* db = Geo_module::module.instance->get_geo_ip_database();
-    Geo_ip_entry_const_ref entry = db->find(ip);
+    const Geo_ip_database* db = Geo_module::module.instance->get_ip_database();
+    Geo_ip_entry_ref entry = db->find(ip);
     assert(entry ? entry->get_country() == "DE" : true);
-#else
+    Address_ref ip2 = Address::create("103.148.139.43", 0); // this ip is missing in dataset
+    Geo_ip_entry_ref entry2 = db->find(ip2);
+//  assert(entry);
+#ifdef NO_GEO_PARSER
     geo_altitude_test();
     geo_coordinate_test();
 #endif

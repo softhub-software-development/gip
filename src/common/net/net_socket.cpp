@@ -259,10 +259,10 @@ Status Socket_tcp::accept(Address* address, Socket_tcp_ref& accepting_socket)
     struct sockaddr addr;
     socklen_t addr_len = sizeof(sockaddr);
     ::memset(&addr, 0, addr_len);
-    SOCKET result = ::accept(socket, &addr, &addr_len);
-    if (result == INVALID_SOCKET)
+    SOCKET raw_socket = ::accept(socket, &addr, &addr_len);
+    if (raw_socket == INVALID_SOCKET)
         return ACCEPT_ERR;
-    accepting_socket = new Socket_tcp(result);
+    accepting_socket = new Socket_tcp(raw_socket);
     address->set_addr(addr);
     return SUCCESS;
 }
@@ -403,9 +403,6 @@ Socket_tcp_secure_server::~Socket_tcp_secure_server()
 
 Status Socket_tcp_secure_server::accept(Address* address, Socket_tcp_ref& accepting_socket)
 {
-#ifdef _DEBUG
-    cout << "ss accept" << endl;
-#endif
     assert(socket != INVALID_SOCKET);
     struct sockaddr addr;
     socklen_t addr_len = sizeof(sockaddr);

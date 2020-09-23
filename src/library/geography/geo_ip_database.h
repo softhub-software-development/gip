@@ -13,7 +13,11 @@
 #include <net/net.h>
 #include <util/util.h>
 
+#ifdef PLATFORM_MAC
+#define DEFAULT_DATA "../.."
+#else
 #define DEFAULT_DATA "."
+#endif
 
 namespace SOFTHUB {
 namespace GEOGRAPHY {
@@ -150,8 +154,10 @@ public:
 
 class Geo_ip_file_database : public Geo_ip_database {
 
-    Geo_ip_entry_ref find_entry(const std::string& path, const BASE::String_vector& tokens, int idx) const;
+    Geo_ip_entry_ref find_entry(const std::string& path, unsigned ip_num) const;
     Geo_ip_entry_ref find_in_filesystem_recursively(const std::string& path, const BASE::String_vector& tokens, int idx) const;
+
+    static unsigned ip_num_from_string_vector(const BASE::String_vector& tokens);
 
 public:
     Geo_ip_file_database() {}

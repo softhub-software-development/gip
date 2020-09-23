@@ -51,14 +51,14 @@ bool Directory::for_each_file(Directory_functor& functor)
     DIR* dir = ::opendir(path.c_str());
     if (!dir)
         return false;
-    bool success = true;
+    bool keep_on = true;
     struct dirent* entry;
-    while (success && !functor.is_interrupted() && (entry = ::readdir(dir)) != 0) {
+    while (keep_on && !functor.is_interrupted() && (entry = ::readdir(dir)) != 0) {
         if (functor.is_valid(entry))
-            success = functor(this, entry);
+            keep_on = functor(this, entry);
     }
     ::closedir(dir);
-    return success;
+    return keep_on;
 }
 
 bool Directory::remove_all_files()

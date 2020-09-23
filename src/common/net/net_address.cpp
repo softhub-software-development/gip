@@ -68,7 +68,7 @@ Address* Address::create_from_dns_name(const string& host, int port)
     } else {
         stringstream stream;
         stream << "getaddrinfo error: " << gai_strerror(status) << " for " << host << endl;
-        log_message(INFO, stream.str().c_str());
+        log_message(INFO, stream.str());
     }
     return address;
 }

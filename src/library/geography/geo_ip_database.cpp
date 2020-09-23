@@ -257,10 +257,6 @@ int Geo_ip_ram_database::import(const string& filename)
         const Geo_longitude& b = Geo_longitude::parse(lon);
         Geo_coordinates coords(a, b);
         Geo_ip_range range(4, lo, hi);
-#if defined _DEBUG && defined PLATFORM_MAC
-        if (country_code != "DE")
-            continue;
-#endif
         Geo_ip_entry* entry = new Geo_ip_entry(range, country_code, country, state, city, zip, tz, coords);
         data->append(entry);
     }
@@ -332,17 +328,22 @@ void Geo_ip_file_database::configure(IConfig* config)
         Geo_module::module.instance->recover_state();
 }
 
-Geo_ip_entry_ref Geo_ip_file_database::find_entry(const string& path, const String_vector& tokens, int idx) const
+unsigned Geo_ip_file_database::ip_num_from_string_vector(const String_vector& tokens)
 {
     unsigned value = 0;
     for (int i = 0, n = (int) tokens.size(); i < n; i++) {
         int t = atoi(tokens[n-i-1].c_str());
         value |= t << (i * 8);
     }
+    return value;
+}
+
+Geo_ip_entry_ref Geo_ip_file_database::find_entry(const string& path, unsigned ip_num) const
+{
     Directory dir(path);
-    Geo_directory_functor functor(value);
-    bool all = dir.for_each_file(functor);
-    if (all)
+    Geo_directory_functor functor(ip_num);
+    bool keep_on = dir.for_each_file(functor);
+    if (keep_on)
         return 0;
     Geo_ip_entry* entry = functor.get_ip_entry();
     return entry && entry->is_valid() ? entry : 0;
@@ -355,7 +356,7 @@ Geo_ip_entry_ref Geo_ip_file_database::find_in_filesystem_recursively(const stri
     Geo_ip_entry_ref entry = 0;
     if (File_path::exists(sub_dir))
         entry = find_in_filesystem_recursively(sub_dir, tokens, idx+1);
-    return entry ? entry : find_entry(path, tokens, idx);
+    return entry ? entry : find_entry(path, ip_num_from_string_vector(tokens));
 }
 
 Geo_ip_entry_ref Geo_ip_file_database::find_in_filesystem(const Address* address) const
@@ -391,22 +392,22 @@ bool Geo_directory_functor::is_valid(struct dirent* entry) const
 
 bool Geo_directory_functor::operator()(const Directory* directory, struct dirent* entry)
 {
-    bool result = false;
     const string& path = directory->get_path();
     const string& filename = File_path::concat(path, entry->d_name);
     FILE* file = fopen(filename.c_str(), "r");
     if (!file)
         return false;
+    bool keep_on = false;
     try {
         Stream_deserializer deserializer(file);
         ip_entry->deserialize(&deserializer);
         const Geo_ip_range& range = ip_entry->get_range();
-        result = !range.in_range(value);
+        keep_on = !range.in_range(value);
     } catch (Exception& ex) {
         clog << "failed to read " << filename << endl;
     }
     fclose(file);
-    return result;
+    return keep_on;
 }
 
 //

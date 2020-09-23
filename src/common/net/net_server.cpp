@@ -106,24 +106,32 @@ void Http_server::serve_request()
     if (status == SUCCESS && socket) {
         serve(client, socket);
     } else {
-        finalize();
+        server_socket->close();
     }
 }
 
 void Http_server::serve(const Address* client, Socket_tcp* socket)
 {
     Http_service_request_ref request(new Http_service_request(this, client, socket));
-    Http_service_response_ref response(new Http_service_response());
-    serve_page(request, response);
-    const string& content = response->get_content();
-    if (content.length() > 0) {
-        socket->set_send_timeout(send_timeout);
-        socket->set_recieve_timeout(receive_timeout);
-        Status status = send(content, socket);
-        // TODO: this looks odd, if I can't send, I can't send an error page
-        if (status != SUCCESS)
-            serve_error_page(content, response);
+    if (request->parse_url_parameters()) {
+        Http_service_response_ref response(new Http_service_response());
+        serve_page(request, response);
+        const string& content = response->get_content();
+        if (content.length() > 0) {
+            socket->set_send_timeout(send_timeout);
+            socket->set_recieve_timeout(receive_timeout);
+            Status status = send(content, socket);
+            if (status != SUCCESS) {
+                stringstream stream;
+                stream << "failed to send, status: " << status;
+                log_message(INFO, stream.str());
+            }
+        }
+    } else {
+        log_message(INFO, "failed to parse request parameters");
     }
+    // do we need flag to keep sockets open?
+    socket->close();
 }
 
 Status Http_server::send(const string& msg, Socket_tcp* socket)
@@ -161,15 +169,17 @@ void Http_server::serve_error_page_content(const string& msg, ostream& stream)
 
 void Http_server::serve_error_page(const string& msg, Http_service_response* sres)
 {
-    clog << "error response " << msg << endl;
+    stringstream stream;
+    stream << "error response: " << msg;
+    log_message(INFO, stream.str());
     stringstream content_stream;
     serve_error_page_content(msg, content_stream);
     const string& content = content_stream.str();
-    stringstream stream;
-    serve_header("404 Not Found", "text/html", content.length(), stream);
-    stream << endl;
-    stream << content;
-    sres->set_content(stream.str());
+    stringstream page_stream;
+    serve_header("404 Not Found", "text/html", content.length(), page_stream);
+    page_stream << endl;
+    page_stream << content;
+    sres->set_content(page_stream.str());
 }
 
 bool Http_server::user_agent_is_mobile(const std::string& user_agent)
@@ -228,7 +238,6 @@ string Http_server::formatted_date(time_t t)
 Http_service_request::Http_service_request(Http_server* server, const Address* client, Socket_tcp* socket) :
     server(server), bytes_read(0), bytes_remaining(0), parameters(0), parameter_map(0), client(client), socket(socket)
 {
-    parse_url_parameters();
 }
 
 string Http_service_request::get_data() const
@@ -278,24 +287,21 @@ const Url_parameter_map& Http_service_request::get_parameter_map() const
     return *parameter_map;
 }
 
-void Http_service_request::parse_url_parameters()
+bool Http_service_request::parse_url_parameters()
 {
-    bytes_read = socket->recv(buffer, max_buf_size);
-//#ifdef _DEBUG
-    clog << "bytes read: " << bytes_read << endl;
-    if (bytes_read > 0)
-        clog << "buffer: " << string(buffer, bytes_read) << endl;
-//#endif
-    if (bytes_read <= 0) {
+    int retry_cnt = 0;
+    while (++retry_cnt < 3 && (bytes_read = socket->recv(buffer, max_buf_size)) == 0);
+    if (bytes_read < 0) {
         stringstream stream;
-        stream << "bad request from " << client->to_string();
-        const string& str = stream.str();
-        throw Exception(str);
+        stream << "bad request from " << client->to_string() << " retries: " << retry_cnt << endl;
+        log_message(INFO, stream.str());
+        return false;
     }
     header = Http_request_header::parse_header(buffer, max_buf_size, bytes_remaining);
+    return true;
 }
 
-void Http_service_request::parse_post_parameters() const
+bool Http_service_request::parse_post_parameters() const
 {
     int count = 0;
     int idx = max_buf_size - bytes_remaining;
@@ -305,7 +311,7 @@ void Http_service_request::parse_post_parameters() const
         // TODO: loop on bytes_remaining
         bytes_read = socket->recv(buffer, max_buf_size);
         if (bytes_read <= 0)
-            return;
+            return false;
         idx = 0;
         n = bytes_remaining = bytes_read;
     }
@@ -318,6 +324,7 @@ void Http_service_request::parse_post_parameters() const
         if (!line.empty())
             Url::parse_post_parameters(line, *parameters);
     }
+    return true;
 }
 
 //

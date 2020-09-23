@@ -67,7 +67,7 @@ void Pool_thread::run()
             long msec = timing.end();
             stringstream stream;
             stream << "thread runtime " << msec;
-            log_message(INFO, stream.str().c_str());
+            log_message(INFO, stream.str());
 #endif
         }
     }
@@ -132,7 +132,7 @@ void Thread_pool::execute(Runnable* target)
         inc_state(num_errors);
         stringstream stream;
         stream << "pool thread: " << ex.get_message();
-        log_message(ERR, stream.str().c_str());
+        log_message(ERR, stream.str());
         target->fail(ex);
     } catch (bad_alloc& ex) {
         inc_state(num_errors);

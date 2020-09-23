@@ -96,6 +96,8 @@ public:
 
 class Http_service_request : public BASE::Object<> {
 
+    friend class Http_server;
+
     static const int max_buf_size = 4096;
 
     Http_server_ref server;
@@ -108,8 +110,8 @@ class Http_service_request : public BASE::Object<> {
     Address_const_ref client;
     mutable Socket_tcp_ref socket;
 
-    void parse_url_parameters();
-    void parse_post_parameters() const;
+    bool parse_url_parameters();
+    bool parse_post_parameters() const;
 
 public:
     Http_service_request(Http_server* server, const Address* client, Socket_tcp* socket);

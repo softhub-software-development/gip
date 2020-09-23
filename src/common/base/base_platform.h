@@ -10,6 +10,7 @@
 #define BASE_PLATFORM_H
 
 #include <assert.h>
+#include <string>
 
 #ifndef NDEBUG
 #ifdef assert
@@ -47,7 +48,7 @@
 
 typedef enum { ALL, WARN, INFO, ERR } Log_level;
 
-void log_message(Log_level level, const char* msg);
+void log_message(Log_level level, const std::string& msg);
 void log_assert(const char* filename, int lineno, const char* func);
 
 #if MEM_LEAK_CHECK

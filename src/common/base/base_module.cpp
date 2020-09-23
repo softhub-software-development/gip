@@ -92,12 +92,12 @@ void Base_module::print_trace(int depth)
     print_mem(stream);
     stream << " number of stack frames: " << size;
     string msg = stream.str();
-    log_message(ERR, msg.c_str());
+    log_message(ERR, msg);
     for (int i = size - 1; i >= 0; i--) {
         stream.str("");
         stream << "[" << i << "] " << strings[i];
         msg = stream.str();
-        log_message(ERR, msg.c_str());
+        log_message(ERR, msg);
     }
     delete[] strings;
     delete[] array;
