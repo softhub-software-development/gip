@@ -60,8 +60,6 @@ void log_message(Log_level level, const string& msg)
 {
     switch (level) {
     case ERR:
-        std::cout << msg << std::endl;
-        break;
     default:
         std::cout << msg << std::endl;
         break;
@@ -96,4 +94,3 @@ static void signal_handler(int signum)
         break;
     }
 }
-

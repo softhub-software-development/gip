@@ -104,9 +104,12 @@ void Geo_module::recover_state()
     db->configure(config);
     const string& data_dir = db->geo_data_dir();
     const string& base_dir = File_path::basepath_of(data_dir);
-    const string& data_file = File_path::concat(base_dir, "geo-db.csv");
+    const string& file_name = config->get_parameter("geo-db-csv", "geo-db.csv");
+    const string& data_file = File_path::concat(base_dir, file_name);
     cout << "recover state from " << data_file << std::endl;
-    if (db->import(data_file) == 0) {
+    if (db->import(data_file)) {
+        cout << "import failed" << std::endl;
+    } else {
         Geo_directory_serializer serializer(data_dir);
         db->serialize(&serializer);
     }

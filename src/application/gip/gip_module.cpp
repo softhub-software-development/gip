@@ -21,9 +21,6 @@ using namespace std;
 
 BASE::Module<Gip_module> Gip_module::module;
 
-typedef BASE::Hash_map<Address_const_ref, Geo_ip_entry_const_ref> Address_geo_ip_map;
-typedef std::pair<Address_const_ref, Geo_ip_entry_const_ref> Address_geo_ip_pair;
-
 //
 // class Gip_module
 //

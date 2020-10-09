@@ -170,6 +170,7 @@ static void test_base64()
 
 static void test_sha()
 {
+#if FEATURE_NET_SSL
     cout << "test_sha" << endl;
     Crypt crypt;
     string s1, s2, s3;
@@ -182,6 +183,7 @@ static void test_sha()
     size_t p_size = 0;
     crypt.sha256(b1, sizeof(b1), p, p_size);
     assert(p_size > 0 && p);
+#endif
 }
 
 FORWARD_CLASS(Log_consumer);
