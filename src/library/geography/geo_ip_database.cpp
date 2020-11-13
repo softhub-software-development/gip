@@ -241,16 +241,6 @@ int Geo_ip_ram_database::import(const string& filename)
         next_column(sstream, lon);
         next_column(sstream, zip);
         next_column(sstream, tz);
-        trim(ip_from);
-        trim(ip_to);
-        trim(country_code);
-        trim(country);
-        trim(state);
-        trim(city);
-        trim(lat);
-        trim(lon);
-        trim(zip);
-        trim(tz);
         unsigned lo = Address_ip4::aton(ip_from.c_str());
         unsigned hi = Address_ip4::aton(ip_to.c_str());
         const Geo_latitude& a = Geo_latitude::parse(lat);
@@ -313,6 +303,7 @@ void Geo_ip_ram_database::next_column(istream& stream, string& s)
     getline(stream, tmp, '"');
     getline(stream, s, '"');
     getline(stream, tmp, ',');
+    trim(s);
 }
 
 //

@@ -179,6 +179,9 @@ Log_stream& Log_stream::put(char_type c)
             start_of_line = false;
         }
         ofstream::put(c);
+#ifdef _DEBUG
+        cout << c;
+#endif
     }
     return *this;
 }
@@ -191,6 +194,9 @@ Log_stream& Log_stream::write(const char_type* s, std::streamsize n)
             start_of_line = false;
         }
         ofstream::write(s, n);
+#ifdef _DEBUG
+        cout << s;
+#endif
     }
     return *this;
 }

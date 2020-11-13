@@ -98,11 +98,7 @@ Socket* Http_connection::create_socket(const Url* url)
     return socket;
 }
 
-#if NET_HTTP_FILE_BASED
-Http_response_ref Http_connection::redirect(const Http_request* request, Http_response* redirect_response, FILE* file)
-#else
 Http_response_ref Http_connection::redirect(const Http_request* request, Http_response* redirect_response)
-#endif
 {
     const Url* url = request->get_url();
     Http_response_ref response = redirect_response;
@@ -116,17 +112,11 @@ Http_response_ref Http_connection::redirect(const Http_request* request, Http_re
         Socket_ref socket = connect(redirect_url);
         if (!socket)
             return Http_response::error;
-#if NET_HTTP_FILE_BASED
-        const string& tmp_name = response->get_filepath();
-        response = new Http_response(tmp_name, redirect_response);
-        retrieve(socket, request, redirect_url, response, file);
-#else
         data_stream.str("");
         retrieve(socket, request, redirect_url, response);
         const string& data = data_stream.str();               // TODO: move data_stream variable into response
         response = new Http_response(redirect_response);
         response->set_content(data);
-#endif
         header = response->get_header();
         code = header->get_response_code();
 #ifdef _DEBUG
@@ -153,74 +143,30 @@ Http_response_ref Http_connection::query(const Http_request* request)
         const Http_request_header* request_header = request->get_header();
         Http_request_method method = request_header->get_method();
         element = new Http_cache_element(url);
-#if NET_HTTP_FILE_BASED
-        const string& tmp_dir = cache->get_tmp_dir();
-        string tmp_template = tmp_dir + "page-XXXXXX";
-        char* tmp_name = (char*) tmp_template.c_str();
-        FILE* tmp_file = 0;
-        if (method != head_method) {
-            int tmp_file_des = mkstemp(tmp_name);
-            if (tmp_file_des < 0)
-                return 0;
-            tmp_file = fdopen(tmp_file_des, "w");
-            if (!tmp_file)
-                return 0;
-        }
-        string filename = File_path::filename_of(tmp_template);
-        if (filename.length() == 0)
-            return 0;
-        string filepath = tmp_dir + filename;
-        element->set_filepath(filepath);
-        response = new Http_response(filepath);
-        retrieve(socket, request, url, response, tmp_file);
-#else
         response = new Http_response();
         retrieve(socket, request, url, response);
         const string& data = data_stream.str();     // TODO: move this to response
         response->set_content(data);
         element->set_content(data);
-#endif
         socket->close();
         const Http_response_header* response_header = response->get_header();
-        if (!response_header) {
-#if NET_HTTP_FILE_BASED
-            if (tmp_file)
-                fclose(tmp_file);
-#else
-#endif
+        if (!response_header)
             return Http_response::error;
-        }
         int code = response_header->get_response_code();
         switch (code) {
         case 301:
         case 302:
-#if NET_HTTP_FILE_BASED
-            if (method != head_method)
-                tmp_file = freopen(tmp_name, "w", tmp_file);
-            response = redirect(request, response, tmp_file);
-#else
             response = redirect(request, response);
-#endif
             break;
         case 403:
             break;
         }
         if (use_cache && method != head_method)
             cache->store(url, element);
-#if NET_HTTP_FILE_BASED
-        if (method != head_method)
-            fclose(tmp_file);
-#else
-#endif
     } else {
-#if NET_HTTP_FILE_BASED
-        const string& filepath = element->get_filepath();
-        response = new Http_response(filepath);
-#else
         const string& content = element->get_content();
         response = new Http_response();
         response->set_content(content);
-#endif
     }
     return response;
 }
@@ -284,34 +230,6 @@ bool Http_connection::send_request(NET::Socket* socket, const Http_request* requ
     return count == header_text_len;
 }
 
-#if NET_HTTP_FILE_BASED
-bool Http_connection::receive_response(Socket* socket, Http_request_method method, Http_response* response, FILE* file)
-{
-    const int max_buf_size = 4096;
-    char buf[max_buf_size];
-    bool in_content = false;
-    int count;
-    while ((count = socket->recv(buf, max_buf_size)) > 0) {
-        if (in_content) {
-            fwrite(buf, 1, count, file);
-        } else {
-            int bytes_remaining = 0;
-            Http_response_header* header = Http_response_header::parse_header(buf, count, bytes_remaining);
-            response->set_header(header);
-//          assert(0 <= bytes_remaining && bytes_remaining <= count);
-            if (method == head_method)
-                break;
-            if (bytes_remaining > 0) {
-                int offset = count - bytes_remaining;
-                assert(0 <= offset && offset < max_buf_size);
-                fwrite(buf + offset, 1, bytes_remaining, file);
-            }
-            in_content = true;
-        }
-    }
-    return count >= 0;
-}
-#else
 bool Http_connection::receive_response(Socket* socket, Http_request_method method, Http_response* response)
 {
     const int max_buf_size = 4096;
@@ -338,23 +256,14 @@ bool Http_connection::receive_response(Socket* socket, Http_request_method metho
     }
     return count >= 0;
 }
-#endif
 
-#if NET_HTTP_FILE_BASED
-bool Http_connection::retrieve(Socket* socket, const Http_request* request, const Url* url, Http_response* response, FILE* file)
-#else
 bool Http_connection::retrieve(Socket* socket, const Http_request* request, const Url* url, Http_response* response)
-#endif
 {
     if (!send_request(socket, request, url))
         return false;
     const Http_request_header* request_header = request->get_header();
     Http_request_method method = request_header->get_method();
-#if NET_HTTP_FILE_BASED
-    return receive_response(socket, method, response, file);
-#else
     return receive_response(socket, method, response);
-#endif
 }
 
 string Http_connection::fix_url_path(const NET::Url* url)
@@ -369,6 +278,141 @@ string Http_connection::fix_url_path(const NET::Url* url)
     }
     return path;
 }
+
+#if NET_HTTP_FILE_BASED
+
+//
+// class Http_file_connection
+//
+
+Http_response_ref Http_file_connection::redirect(const Http_request* request, Http_response* redirect_response, FILE* file)
+{
+    const Url* url = request->get_url();
+    Http_response_ref response = redirect_response;
+    const Http_response_header* header = response->get_header();
+    int code = header->get_response_code(), redirect_count = 0;
+    while ((code == 301 || code == 302) && redirect_count++ < request->get_max_redirects()) {
+        const string& location = header->get_location();
+        Url_ref redirect_url = Url::create(location);
+        if (redirect_url->get_protocol() == "file")
+            redirect_url = new Url(url, redirect_url->get_path());
+        Socket_ref socket = connect(redirect_url);
+        if (!socket)
+            return Http_response::error;
+        const string& tmp_name = response->get_filepath();
+        response = new Http_response(tmp_name, redirect_response);
+        retrieve(socket, request, redirect_url, response, file);
+        header = response->get_header();
+        code = header->get_response_code();
+#ifdef _DEBUG
+        cout << "redirected " << url->to_string() << " to " << location << " [" << code << "]" << endl;
+#endif
+        socket->close();
+    }
+    return response;
+}
+
+Http_response_ref Http_file_connection::query(const Http_request* request)
+{
+    Http_cache* cache = factory->get_cache();
+    bool use_cache = cache && request->get_caching();
+    const Url* url = request->get_url();
+    Http_response_ref response = 0;
+    Http_cache_element_ref element;
+    if (use_cache)
+        element = cache->find(url);
+    if (!element || element->is_expired()) {
+        Socket_ref socket = connect(url);
+        if (!socket)
+            return Http_response::error;
+        const Http_request_header* request_header = request->get_header();
+        Http_request_method method = request_header->get_method();
+        element = new Http_cache_element(url);
+        const string& tmp_dir = cache->get_tmp_dir();
+        string tmp_template = tmp_dir + "page-XXXXXX";
+        char* tmp_name = (char*) tmp_template.c_str();
+        FILE* tmp_file = 0;
+        if (method != head_method) {
+            int tmp_file_des = mkstemp(tmp_name);
+            if (tmp_file_des < 0)
+                return 0;
+            tmp_file = fdopen(tmp_file_des, "w");
+            if (!tmp_file)
+                return 0;
+        }
+        string filename = File_path::filename_of(tmp_template);
+        if (filename.length() == 0)
+            return 0;
+        string filepath = tmp_dir + filename;
+        element->set_filepath(filepath);
+        response = new Http_response(filepath);
+        retrieve(socket, request, url, response, tmp_file);
+        socket->close();
+        const Http_response_header* response_header = response->get_header();
+        if (!response_header) {
+            if (tmp_file)
+                fclose(tmp_file);
+            return Http_response::error;
+        }
+        int code = response_header->get_response_code();
+        switch (code) {
+        case 301:
+        case 302:
+            if (method != head_method)
+                tmp_file = freopen(tmp_name, "w", tmp_file);
+            response = redirect(request, response, tmp_file);
+            break;
+        case 403:
+            break;
+        }
+        if (use_cache && method != head_method)
+            cache->store(url, element);
+        if (method != head_method)
+            fclose(tmp_file);
+    } else {
+        const string& filepath = element->get_filepath();
+        response = new Http_response(filepath);
+    }
+    return response;
+}
+
+bool Http_file_connection::receive_response(Socket* socket, Http_request_method method, Http_response* response, FILE* file)
+{
+    const int max_buf_size = 4096;
+    char buf[max_buf_size];
+    bool in_content = false;
+    int count;
+    while ((count = socket->recv(buf, max_buf_size)) > 0) {
+        if (in_content) {
+            fwrite(buf, 1, count, file);
+        } else {
+            int bytes_remaining = 0;
+            Http_response_header* header = Http_response_header::parse_header(buf, count, bytes_remaining);
+            response->set_header(header);
+//          assert(0 <= bytes_remaining && bytes_remaining <= count);
+            if (method == head_method)
+                break;
+            if (bytes_remaining > 0) {
+                int offset = count - bytes_remaining;
+                assert(0 <= offset && offset < max_buf_size);
+                fwrite(buf + offset, 1, bytes_remaining, file);
+            }
+            in_content = true;
+        }
+    }
+    return count >= 0;
+}
+
+bool Http_file_connection::retrieve(Socket* socket, const Http_request* request, const Url* url, Http_response* response, FILE* file)
+{
+    if (!send_request(socket, request, url))
+        return false;
+    const Http_request_header* request_header = request->get_header();
+    Http_request_method method = request_header->get_method();
+    return receive_response(socket, method, response, file);
+}
+
+#endif
 
 //
 // class Http_request
@@ -394,6 +438,21 @@ Http_response::Http_response(const Http_response* parent) :
 #endif
 {
 }
+
+#if NET_HTTP_FILE_BASED
+
+//
+// class Http_file_response
+//
+
+Http_response_ref Http_file_response::error = new Http_response();
+
+Http_file_response::Http_file_response(const string& filepath, const Http_response* parent) :
+    filepath(filepath), parent(parent), header(parent ? parent->get_header() : 0)
+{
+}
+
+#endif
 
 //
 // class Http_header
@@ -664,12 +723,21 @@ void Http_cache::clear()
 
 bool Http_cache_element::erase()
 {
-#if NET_HTTP_FILE_BASED
-    return File_path::remove_file(filepath);
-#else
     return true;
-#endif
 }
+
+#if NET_HTTP_FILE_BASED
+
+//
+// class Http_file_cache_element
+//
+
+bool Http_file_cache_element::erase()
+{
+    return File_path::remove_file(filepath);
+}
+
+#endif
 
 const char* Http_cache::default_cache_location = "/var/tmp/";
 

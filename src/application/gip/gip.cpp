@@ -49,7 +49,8 @@ int main(int argc, char** argv)
             report->report_ip(ip);
         }
     } else {
-        cout << "geo location server run" << endl;
+        int port = config->get_parameter("geo-ip-port", GEO_IP_SERVER_PORT);
+        cout << "geo location server run on port " << port << endl;
         Geo_module::module.instance->run_service();
         Geo_module::module.dispose();
     }
@@ -60,8 +61,6 @@ void log_message(Log_level level, const string& msg)
 {
     switch (level) {
     case ERR:
-        std::cout << msg << std::endl;
-        break;
     default:
         std::cout << msg << std::endl;
         break;
@@ -96,4 +95,3 @@ static void signal_handler(int signum)
         break;
     }
 }
-

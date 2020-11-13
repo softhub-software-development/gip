@@ -69,25 +69,15 @@ class Http_connection : public BASE::Object<> {
     Http_factory_ref factory;
     int receive_timeout;
     bool ssl_with_fallback;
-#if NET_HTTP_FILE_BASED
-#else
     std::stringstream data_stream;
-#endif
 
     NET::Socket_ref connect(const NET::Url* url);
     NET::Socket* create_socket(const NET::Url* url);
-
-#if NET_HTTP_FILE_BASED
-    Http_response_ref redirect(const Http_request* request, Http_response* response, FILE* file);
-    bool send_request(NET::Socket* socket, const Http_request* request, const NET::Url* url);
-    bool receive_response(NET::Socket* socket, Http_request_method method, Http_response* response, FILE* file);
-    bool retrieve(NET::Socket* socket, const Http_request* request, const NET::Url* url, Http_response* response, FILE* file);
-#else
     Http_response_ref redirect(const Http_request* request, Http_response* response);
-    bool send_request(NET::Socket* socket, const Http_request* request, const NET::Url* url);
     bool receive_response(NET::Socket* socket, Http_request_method method, Http_response* response);
     bool retrieve(NET::Socket* socket, const Http_request* request, const NET::Url* url, Http_response* response);
-#endif
+
+    bool send_request(NET::Socket* socket, const Http_request* request, const NET::Url* url);
 
     static std::string fix_url_path(const NET::Url* url);
 
@@ -98,6 +88,40 @@ public:
     bool get_ssl_with_fallback() const { return ssl_with_fallback; }
     Http_response_ref query(const Http_request* request);
 };
+
+#if NET_HTTP_FILE_BASED
+
+//
+// class Http_file_connection
+//
+
+class Http_file_connection : public BASE::Object<> {
+
+    friend class Http_factory;
+
+    Http_factory_ref factory;
+    int receive_timeout;
+    bool ssl_with_fallback;
+
+    NET::Socket_ref connect(const NET::Url* url);
+    NET::Socket* create_socket(const NET::Url* url);
+    Http_response_ref redirect(const Http_request* request, Http_response* response, FILE* file);
+    bool receive_response(NET::Socket* socket, Http_request_method method, Http_response* response, FILE* file);
+    bool retrieve(NET::Socket* socket, const Http_request* request, const NET::Url* url, Http_response* response, FILE* file);
+
+    bool send_request(NET::Socket* socket, const Http_request* request, const NET::Url* url);
+
+    static std::string fix_url_path(const NET::Url* url);
+
+    Http_file_connection(Http_factory* factory = 0);
+
+public:
+    void set_ssl_with_fallback(bool state) { ssl_with_fallback = state; }
+    bool get_ssl_with_fallback() const { return ssl_with_fallback; }
+    Http_response_ref query(const Http_request* request);
+};
+
+#endif
 
 //
 // class Http_request
@@ -130,31 +154,46 @@ public:
 
 class Http_response : public BASE::Object<> {
 
-#if NET_HTTP_FILE_BASED
-    std::string filepath;
-#else
     std::string content;
-#endif
     Http_response_const_ref parent;
     Http_response_header_const_ref header;
 
 public:
-#if NET_HTTP_FILE_BASED
-    Http_response(const std::string& filepath, const Http_response* parent = 0);
-
-    const std::string& get_filepath() const { return filepath; }
-#else
     Http_response(const Http_response* parent = 0);
 
     void set_content(const std::string& content) { this->content = content; }
     const std::string& get_content() const { return content; }
-#endif
     const Http_response* get_parent() const { return parent; }
     void set_header(Http_response_header* header) { this->header = header; }
     const Http_response_header* get_header() const { return header; }
 
     static Http_response_ref error;
 };
+
+#if NET_HTTP_FILE_BASED
+
+//
+// class Http_file_response
+//
+
+class Http_file_response : public BASE::Object<> {
+
+    std::string filepath;
+    Http_response_const_ref parent;
+    Http_response_header_const_ref header;
+
+public:
+    Http_file_response(const std::string& filepath, const Http_response* parent = 0);
+
+    const std::string& get_filepath() const { return filepath; }
+    const Http_response* get_parent() const { return parent; }
+    void set_header(Http_response_header* header) { this->header = header; }
+    const Http_response_header* get_header() const { return header; }
+
+    static Http_response_ref error;
+};
+
+#endif
 
 //
 // class Http_header
@@ -301,25 +340,38 @@ public:
 class Http_cache_element : public BASE::Object<> {
 
     Url_const_ref url;
-#if NET_HTTP_FILE_BASED
-    std::string filepath;
-#else
     std::string content;
-#endif
 
 public:
     Http_cache_element(const Url* url) : url(url) {}
 
     bool is_expired() const { return true; }
-#if NET_HTTP_FILE_BASED
-    void set_filepath(const std::string& filepath) { this->filepath = filepath; }
-    const std::string& get_filepath() const { return filepath; }
-#else
     void set_content(const std::string& content) { this->content = content; }
     const std::string& get_content() const { return content; }
-#endif
     bool erase();
 };
+
+#if NET_HTTP_FILE_BASED
+
+//
+// class Http_file_cache_element
+//
+
+class Http_file_cache_element : public BASE::Object<> {
+
+    Url_const_ref url;
+    std::string filepath;
+
+public:
+    Http_file_cache_element(const Url* url) : url(url) {}
+
+    bool is_expired() const { return true; }
+    void set_filepath(const std::string& filepath) { this->filepath = filepath; }
+    const std::string& get_filepath() const { return filepath; }
+    bool erase();
+};
+
+#endif
 
 }}
 

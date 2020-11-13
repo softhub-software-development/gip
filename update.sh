@@ -1,5 +1,5 @@
 
-POF=../../workspace/portfolio
+POF=../../wrk
 SRC=${POF}/src
 DST=.
 

@@ -76,7 +76,6 @@ bool Array<T>::binary_search(T& element, bool comp(const T&, const T&)) const
 {
     const_iterator head = elements->begin();
     const_iterator tail = elements->end();
-    const_iterator null;
     if (head == tail)
         return false;
     const_iterator it = std::lower_bound(head, tail, element, comp);

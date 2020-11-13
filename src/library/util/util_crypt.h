@@ -22,11 +22,11 @@
 namespace SOFTHUB {
 namespace UTIL {
 
+#if FEATURE_NET_SSL
+
 class Crypt {
 
-#if FEATURE_NET_SSL
     RSA* rsa;
-#endif
 
     void reset();
 
@@ -47,8 +47,6 @@ public:
     static void sha256(const byte* msg, size_t msg_len, unique_byte_ptr& digest, size_t& digest_len);
 };
 
-#if FEATURE_NET_SSL
-
 //
 // class Crypt_validation_io
 //
@@ -60,16 +58,10 @@ protected:
     byte hash[SHA256_DIGEST_LENGTH];
     SHA256_CTX sha256;
     bool finalized;
-#ifdef _DEBUG
     int io_count;
-#endif
 
 public:
-    Crypt_validation_io(T& stream) : BASE::Stream_io<T>(stream), finalized(false)
-#ifdef _DEBUG
-        , io_count(0)
-#endif
-    {}
+    Crypt_validation_io(T& stream) : BASE::Stream_io<T>(stream), finalized(false), io_count(0) {}
 };
 
 //
