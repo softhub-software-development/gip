@@ -144,7 +144,8 @@ Http_response_ref Http_connection::query(const Http_request* request)
         Http_request_method method = request_header->get_method();
         element = new Http_cache_element(url);
         response = new Http_response();
-        retrieve(socket, request, url, response);
+        bool success = retrieve(socket, request, url, response);
+        // TODO: handle 404 already here
         const string& data = data_stream.str();     // TODO: move this to response
         response->set_content(data);
         element->set_content(data);

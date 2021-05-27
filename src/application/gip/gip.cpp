@@ -7,7 +7,6 @@
 //
 
 #include "gip.h"
-#include <gip/gip_module.h>
 #include <geography/geo_geography.h>
 #include <geography/geo_module.h>
 #include <geography/geo_config.h>
@@ -54,6 +53,7 @@ int main(int argc, char** argv)
         Geo_module::module.instance->run_service();
         Geo_module::module.dispose();
     }
+    // Geo_module::module.dispose(); // TODO
     return 0;
 }
 

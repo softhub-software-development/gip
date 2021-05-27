@@ -20,6 +20,14 @@
 #include <unistd.h>
 #endif
 
+#define USE_OSTREAM 0
+
+#if USE_OSTREAM
+#define CONVERT(val) ostream::operator<<(val)
+#else
+#define CONVERT(val) cvs(val)
+#endif
+
 using namespace SOFTHUB::HAL;
 using namespace std;
 
@@ -107,67 +115,67 @@ Log_stream& Log_stream::operator<<(Log_stream& (*fun)(Log_stream& param))
 
 Log_stream& Log_stream::operator<<(bool val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(short val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(unsigned short val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(int val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(unsigned int val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(long val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(unsigned long val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(large val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(float val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(double val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 
 Log_stream& Log_stream::operator<<(const void* val)
 {
-    ostream::operator<<(val);
+    CONVERT(val);
     return *this;
 }
 

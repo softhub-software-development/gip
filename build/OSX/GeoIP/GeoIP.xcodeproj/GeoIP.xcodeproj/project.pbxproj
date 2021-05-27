@@ -428,8 +428,8 @@
 				83C3E4C51E2DECDF00C48B4A /* util.h */,
 				83C3E4C61E2DECDF00C48B4A /* util_cache.h */,
 				83C3E4C71E2DECDF00C48B4A /* util_cache_inline.h */,
-				83C3E4C81E2DECDF00C48B4A /* util_compress.cpp */,
 				83C3E4C91E2DECDF00C48B4A /* util_compress.h */,
+				83C3E4C81E2DECDF00C48B4A /* util_compress.cpp */,
 				839E8AE224030CAD0090146F /* util_config.h */,
 				839E8AE124030CAD0090146F /* util_config.cpp */,
 				83C3E4CA1E2DECDF00C48B4A /* util_container.h */,
@@ -654,8 +654,8 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					_DEBUG,
 					"DEBUG=1",
-					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -666,7 +666,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					../../../src/application,
 					../../../src/common,
 					../../../src/library,
@@ -721,7 +720,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					../../../src/application,
 					../../../src/common,
 					../../../src/library,
@@ -741,11 +739,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					_DEBUG,
-					"$(inherited)",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.softhub.GeoIP;

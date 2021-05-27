@@ -270,7 +270,7 @@ bool Address_ip4::is_private() const
     int a2 = (ip >> 16) & 0xff;
     if (a3 == 172 && 16 <= a2 && a2 < 32)
         return true;
-    if (a3 == 192 &&  a2 == 168)
+    if (a3 == 192 && a2 == 168)
         return true;
     return false;
 }

@@ -41,6 +41,8 @@ class Log_stream : public std::ofstream {
 
     friend Log_stream& endl(Log_stream& stream);
 
+    template <typename T> void cvs(T val);
+
     void write_header();
 
 public:
@@ -83,6 +85,15 @@ inline Log_stream& endl(Log_stream& stream)
     stream.start_of_line = true;
     stream.flush();
     return stream;
+}
+
+template <typename T>
+void Log_stream::cvs(T val)
+{
+    std::stringstream ss;
+    ss << val;
+    std::string s = ss.str();
+    write(s.c_str(), s.length());
 }
 
 }

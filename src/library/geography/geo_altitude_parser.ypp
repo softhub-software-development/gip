@@ -7,7 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define YYPRINT(file, type, value)	fprintf(file, "%s", yy_alt_text)
+#define YYPRINT(file, type, value)    fprintf(file, "%s", yy_alt_text)
 
 extern const char* yy_alt_text;
 extern int yyerror(const char* msg);
@@ -34,9 +34,9 @@ static void assign_fl(Altitude_struct& altitude, float number);
 %token METER
 
 %union {
-	Altitude_struct altitude;
-	int int_value;
-	float real_value;
+    Altitude_struct altitude;
+    int int_value;
+    float real_value;
 }
 
 %type <altitude>   altitude;
@@ -49,49 +49,49 @@ static void assign_fl(Altitude_struct& altitude, float number);
 %%
 
 start
-	: START_ALTITUDE altitude { altitude_parse_result = $2; }
-	;
+    : START_ALTITUDE altitude { altitude_parse_result = $2; }
+    ;
 
 altitude
-	: UNLIMITED
-	| number GND { assign_gnd($$, $1); }
-	| number MSL { assign_msl($$, $1); }
-	;
+    : UNLIMITED
+    | number GND { assign_gnd($$, $1); }
+    | number MSL { assign_msl($$, $1); }
+    ;
 
 number
-	: integer { $$ = $1; }
-	| real { $$ = $1; }
-	;
+    : integer { $$ = $1; }
+    | real { $$ = $1; }
+    ;
 
 integer
-	: INTEGER { $$ = atoi(yy_alt_text); }
-	;
+    : INTEGER { $$ = atoi(yy_alt_text); }
+    ;
 
 real
-	: REAL { $$ = atof(yy_alt_text); }
-	;
+    : REAL { $$ = atof(yy_alt_text); }
+    ;
 
 %%
 
 static void assign_gnd(Altitude_struct& altitude, float number)
 {
-	altitude.reference = gnd;
-	altitude.value = number;
+    altitude.reference = gnd;
+    altitude.value = number;
 }
 
 static void assign_msl(Altitude_struct& altitude, float number)
 {
-	altitude.reference = msl;
-	altitude.value = number;
+    altitude.reference = msl;
+    altitude.value = number;
 }
 
 static void assign_fl(Altitude_struct& altitude, float number)
 {
-	altitude.reference = fl;
-	altitude.value = number;
+    altitude.reference = fl;
+    altitude.value = number;
 }
 
 int yy_alt_error(const char* msg)
 {
-	return 0;
+    return 0;
 }

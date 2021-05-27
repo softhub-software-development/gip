@@ -21,6 +21,7 @@
 #define SSL_DEFAULT_PRIV_KEY "..\\..\\certificates\\privkey1.pem"
 #define SSL_DEFAULT_FULL_CHAIN "..\\..\\certificates\\fullchain1.pem"
 #elif defined PLATFORM_MAC
+//#define SSL_APPLE_PAY_CERT_PEM "../../certificates/apple_pay_sandbox.pem"
 #define SSL_DEFAULT_CERT_PEM "../../certificates/cert1.pem"
 #define SSL_DEFAULT_PRIV_KEY "../../certificates/privkey1.pem"
 #define SSL_DEFAULT_FULL_CHAIN "../../certificates/fullchain1.pem"
@@ -102,13 +103,13 @@ void Net_module::init_context(SSL_CTX* ctx)
     SSL_CTX_set_options(ctx, SSL_OP_SINGLE_DH_USE);
     int use_cert = SSL_CTX_use_certificate_file(ctx, SSL_DEFAULT_CERT_PEM, SSL_FILETYPE_PEM);
     if (use_cert <= 0)
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_fp(stdout);
     int use_priv = SSL_CTX_use_PrivateKey_file(ctx, SSL_DEFAULT_PRIV_KEY, SSL_FILETYPE_PEM);
     if (use_priv <= 0)
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_fp(stdout);
     int use_chain = SSL_CTX_use_certificate_chain_file(ctx, SSL_DEFAULT_FULL_CHAIN);
     if (use_chain <= 0)
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_fp(stdout);
 #ifdef _DEBUG
     cout << "use_cert: " << use_cert << " use_priv: " << use_priv << " use_chain: " << use_chain << endl;
 #endif

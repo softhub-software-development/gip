@@ -189,39 +189,30 @@ ularge cpuid()
 }
 #endif
 
-USHORT hashMacAddress(PIP_ADAPTER_INFO info)
+ULONG hashMacAddress(PIP_ADAPTER_INFO info)
 {
-	USHORT i, hash = 0;
-	for (i = 0; i < info->AddressLength; i++)
-		hash += (info->Address[i] << ((i & 1) * 8));
-	return hash;
+    ULONG i, hash = 0;
+    for (i = 0; i < info->AddressLength; i++)
+        hash += (info->Address[i] << ((i & 1) * 8));
+    return hash;
 }
 
-BOOL readMacAddress(USHORT* mac1, USHORT* mac2)
+BOOL readMacAddress(ULONG* mac)
 {
-	IP_ADAPTER_INFO info[32];
-	DWORD dwBufLen = sizeof(info);
+    IP_ADAPTER_INFO info[32];
+    DWORD dwBufLen = sizeof(info);
 
-	DWORD dwStatus = GetAdaptersInfo(info, &dwBufLen);
-	if (dwStatus != ERROR_SUCCESS)
-		return FALSE;
-	*mac1 = hashMacAddress(info);
-	if (info->Next)
-		*mac2 = hashMacAddress(info->Next);
-	// Sort the mac addresses. We don't want to invalidate     
-	// both macs if they just change order.           
-	if (mac1 > mac2) {
-		USHORT tmp = *mac2;
-		*mac2 = *mac1;
-		*mac1 = tmp;
-	}
-	return TRUE;
+    DWORD dwStatus = GetAdaptersInfo(info, &dwBufLen);
+    if (dwStatus != ERROR_SUCCESS)
+        return FALSE;
+    *mac = hashMacAddress(info);
+    return TRUE;
 }
 
 void generate_platform_id(char** buf, int* bufSize)
 {
     const int id_size = 12;
-    USHORT mac1 = 0, mac2 = 0;
+    ULONG mac = 0;
 	char name_buf[1024];
 	u_long name_buf_len = 1024;
 	union {
@@ -231,20 +222,20 @@ void generate_platform_id(char** buf, int* bufSize)
 
     memset(info.ival, 0, sizeof(info.ival));
     __cpuid(info.ival, 0);
-    readMacAddress(&mac1, &mac2);
+    readMacAddress(&mac);
 	memset(name_buf, 0, sizeof(name_buf));
     GetComputerNameA(name_buf, &name_buf_len);
 	name_buf[0] ^= 'C';
 	name_buf[1] ^= 'W';
     *buf = (char*) calloc(id_size+1, sizeof(char));
-    (*buf)[0] = HEX((mac1 >> 12) & 0x0f);
-    (*buf)[1] = HEX((mac1 >> 8) & 0x0f);
-    (*buf)[2] = HEX((mac1 >> 4) & 0x0f);
-    (*buf)[3] = HEX(mac1 & 0x0f);
-    (*buf)[4] = HEX((mac2 >> 12) & 0x0f);
-    (*buf)[5] = HEX((mac2 >> 8) & 0x0f);
-    (*buf)[6] = HEX((mac2 >> 4) & 0x0f);
-    (*buf)[7] = HEX(mac2 & 0x0f);
+    (*buf)[0] = HEX((mac >> 28) & 0x0f);
+    (*buf)[1] = HEX((mac >> 24) & 0x0f);
+    (*buf)[2] = HEX((mac >> 20) & 0x0f);
+    (*buf)[3] = HEX((mac >> 16) & 0x0f);
+    (*buf)[4] = HEX((mac >> 12) & 0x0f);
+    (*buf)[5] = HEX((mac >> 8) & 0x0f);
+    (*buf)[6] = HEX((mac >> 4) & 0x0f);
+    (*buf)[7] = HEX(mac & 0x0f);
     (*buf)[8] = HEX((name_buf[0] >> 4) & 0x0f);
     (*buf)[9] = HEX((info.cval[PLATFORM_ID_SIZE - 2] >> 4) & 0x0f);
     (*buf)[10] = HEX((name_buf[1] >> 4) & 0x0f);
