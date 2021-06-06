@@ -44,7 +44,7 @@ Example GIP commands:
 
 <h3>Print help:</h3>
 <p># gip -h</p>
-usage: gip [-C] [-c] [-g] [-h] [-tT] [ip-address-or-domain]<br/>
+usage: gip [-C] [-c] [-g] [-h] [-tT] [ip-address-or-domain ...]<br/>
        gip invoked with no arguments starts the gip server<br/>
        -C print country<br/>
        -c print city<br/>
