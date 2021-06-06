@@ -24,6 +24,7 @@ using namespace SOFTHUB::UTIL;
 using namespace std;
 
 static void signal_handler(int signum);
+static void report_ip(int argc, char** argv, Geo_config* config);
 static void usage();
 
 int main(int argc, char** argv)
@@ -42,10 +43,7 @@ int main(int argc, char** argv)
         if (config->get_bool_parameter("h")) {
             usage();
         } else {
-            Geo_report_factory factory;
-            Geo_report_ref report = factory.create_report(config);
-            const string& ip = argv[argc-1];
-            report->report_ip(ip);
+            report_ip(argc, argv, config);
         }
     } else {
         int port = config->get_parameter("geo-ip-port", GEO_IP_SERVER_PORT);
@@ -55,6 +53,22 @@ int main(int argc, char** argv)
     }
     // Geo_module::module.dispose(); // TODO
     return 0;
+}
+
+static void report_ip(int argc, char** argv, Geo_config* config)
+{
+    Geo_report_factory factory;
+    Geo_report_ref report = factory.create_report(config);
+    bool reported = false;
+    for (int i = 1; i < argc; i++) {
+        const string& arg = argv[i];
+        if (arg[0] != '-') {
+            report->report_ip(arg);
+            reported = true;
+        }
+    }
+    if (!reported)
+        usage();
 }
 
 void log_message(Log_level level, const string& msg)
@@ -69,7 +83,7 @@ void log_message(Log_level level, const string& msg)
 
 static void usage()
 {
-    cout << "usage: gip [-C] [-c] [-g] [-d] [-h] [-tT] [ip-address-or-domain]" << endl;
+    cout << "usage: gip [-C] [-c] [-g] [-d] [-h] [-tT] [ip-address-or-domain ...]" << endl;
     cout << "       gip invoked with no arguments starts the gip server" << endl;
     cout << "       -C print country" << endl;
     cout << "       -c print city" << endl;
