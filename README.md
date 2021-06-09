@@ -2,9 +2,11 @@
 
 Geo IP server and command line tool.
 
-GIP is an Apache log file analyzer for Linux, in particular for small platforms like the Raspberry Pi.
+Gip is an Apache log file analyzer for Linux, in particular for small platforms like the Raspberry Pi.
 When launched without command line arguments or using the lauch script gip.sh, gip runs as a server process.
 Given an argument like "gip google.com" or a numeric IP address, it prints the country and city the address is registered in.
+
+![geo-ip-map](https://user-images.githubusercontent.com/61689577/121388466-cdf44500-c94b-11eb-94d5-c2f28d808f25.png)
 
 To compile the source code, follow these steps:
 
@@ -15,7 +17,7 @@ To compile the source code, follow these steps:
 
 (3) configure the server database
 
-GIP comes with a tiny ip database file with only a few IP ranges for testing. In order to use GIP, download the
+Gip comes with a tiny ip database file with only a few IP ranges for testing. In order to use gip, download the
 database from the link below and replace geo-ip.csv with the full database. Remove the directory named "geo-ip" if
 it has already been generated and run the gip command again. If the "geo-ip" directory is not found, it is regenerated
 from the "geo-ip.csv" database, which may take a few minutes. Be sure, the column headings of your database matches with
@@ -30,7 +32,7 @@ IMPORTANT: The "geo-ip" directory holds a lot of sub directories and files, ther
 with a high number of inodes. Make sure to check the log files at "/var/tmp/gip/log/*.log" for error messages. Issue
 a df -i to check if the filesystem ran out of inodes.
 
-To run the GIP server, lauch gip without parameters or use the gip.sh script to lauch the server.
+To run the gip server, lauch gip without parameters or use the gip.sh script to lauch the server.
 Use your browser to access "http://localhost:10101/gip".
 
 See the supplied php scripts to tunnel through your firewall. TODO: refine this.
@@ -40,7 +42,7 @@ from here: https://lite.ip2location.com/download?db=db11&type=csv&version=4
 
 Here is a reference installation: https://softhub.com/gip/geo-ip.php?cmd=traffic
 
-Example GIP commands:
+Example gip commands:
 
 <h3>Print help:</h3>
 <p># gip -h</p>
