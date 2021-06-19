@@ -25,6 +25,7 @@ using namespace std;
 
 static void signal_handler(int signum);
 static void report_ip(int argc, char** argv, Geo_config* config);
+static void replace_ip(Geo_config* config);
 static void usage();
 
 int main(int argc, char** argv)
@@ -45,11 +46,13 @@ int main(int argc, char** argv)
         } else {
             report_ip(argc, argv, config);
         }
-    } else {
+    } else if (isatty(fileno(stdin))) {
         int port = config->get_parameter("geo-ip-port", GEO_IP_SERVER_PORT);
         cout << "geo location server run on port " << port << endl;
         Geo_module::module.instance->run_service();
         Geo_module::module.dispose();
+    } else {
+        replace_ip(config);
     }
     // Geo_module::module.dispose(); // TODO
     return 0;
@@ -69,6 +72,22 @@ static void report_ip(int argc, char** argv, Geo_config* config)
     }
     if (!reported)
         usage();
+}
+
+static void replace_ip(Geo_config* config)
+{
+    Geo_report_factory factory;
+    Geo_report_ref report = factory.create_report(config);
+    size_t n;
+    ssize_t cnt;
+    char* line = 0;
+    while ((cnt = getline(&line, &n, stdin)) != -1) {
+        char* tail = strchr(line, ' ');
+        string ip(line, tail - line);
+        report->report_ip(ip);
+        cout << tail;
+    }
+    free(line);
 }
 
 void log_message(Log_level level, const string& msg)

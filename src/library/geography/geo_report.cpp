@@ -28,7 +28,12 @@ namespace GEOGRAPHY {
 //
 
 Geo_report::Geo_report(ostream& rout) :
-    rout(rout), option_report_country(false), option_report_city(false), option_report_state(false), option_coords(false), option_domain(false)
+    rout(rout),
+    option_report_country(false),
+    option_report_city(false),
+    option_report_state(false),
+    option_coords(false),
+    option_domain(false)
 {
 }
 
@@ -63,7 +68,8 @@ void Geo_report::output_location(const Geo_ip_entry* entry, bool all_info)
     }
     if (any_info)
         rout << "\"";
-    rout << endl;
+    if (isatty(fileno(stdin)))
+        rout << endl;
 }
 
 void Geo_report::output_info(const string& ip, const Address* addr, const Geo_ip_entry* entry)
