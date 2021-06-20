@@ -38,7 +38,7 @@ Use your browser to access "http://localhost:10101/gip".
 See the supplied php scripts to tunnel through your firewall. TODO: refine this.
 
 Download the geo ip database "IP2Location LITE IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE"
-from here: https://lite.ip2location.com/download?db=db11&type=csv&version=4
+from here: https://lite.ip2location.com/ip2location-lite see Free Databases, DB11-LITE.
 
 Here is a reference installation: https://softhub.com/gip/geo-ip.php?cmd=traffic
 
