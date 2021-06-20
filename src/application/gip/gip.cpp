@@ -46,15 +46,12 @@ int main(int argc, char** argv)
         } else {
             report_ip(argc, argv, config);
         }
-    } else if (isatty(fileno(stdin))) {
+    } else {
         int port = config->get_parameter("geo-ip-port", GEO_IP_SERVER_PORT);
         cout << "geo location server run on port " << port << endl;
         Geo_module::module.instance->run_service();
-        Geo_module::module.dispose();
-    } else {
-        replace_ip(config);
     }
-    // Geo_module::module.dispose(); // TODO
+    Geo_module::module.dispose();
     return 0;
 }
 

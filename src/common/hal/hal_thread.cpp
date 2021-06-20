@@ -38,8 +38,11 @@ Thread_base::Thread_base(const pthread_t& pthread) : posix_thread(pthread), stop
 
 Thread_base::~Thread_base()
 {
+    // TODO: can't detach if posix thread no more running
+#if 0
     int error = pthread_detach(posix_thread);
     assert(!error || error == ESRCH);
+#endif
 }
 
 void Thread_base::run_internal()

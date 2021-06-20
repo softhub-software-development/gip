@@ -74,6 +74,3 @@ softhub.com, Germany
 <p># gip -g softhub.com</p>
 52.5244 13.4105
 <br/>
-<h3>Take geo ip from first column and add location info</h3>
-<p>cat /var/log/apache2/access.log | gip</p>
-<br/>

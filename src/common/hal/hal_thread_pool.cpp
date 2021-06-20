@@ -108,7 +108,9 @@ void Thread_pool::terminate(Pool_thread* thread)
 {
     Lock::Block lock(mutex);
     num_threads--;
+#ifdef _DEBUG
     log_message(INFO, "pool thread terminated");
+#endif
 }
 
 void Thread_pool::last_resort()

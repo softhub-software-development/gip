@@ -68,8 +68,7 @@ void Geo_report::output_location(const Geo_ip_entry* entry, bool all_info)
     }
     if (any_info)
         rout << "\"";
-    if (isatty(fileno(stdin)))
-        rout << endl;
+    rout << endl;
 }
 
 void Geo_report::output_info(const string& ip, const Address* addr, const Geo_ip_entry* entry)
