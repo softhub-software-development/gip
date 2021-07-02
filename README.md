@@ -15,16 +15,16 @@ To compile the source code, follow these steps:
 
 (2) go to the build/Linux/gip directory and run "make"
 
-(3) configure the server database
+(3) configure the ip dataset
 
-Gip comes with a tiny ip database file with only a few IP ranges for testing. In order to use gip, download the
-database from the link below and replace geo-ip.csv with the full database. Remove the directory named "geo-ip" if
+Gip comes with a tiny ip dataset file with only a few IP ranges for testing. In order to use gip, download the
+dataset from the link below and replace geo-ip.csv with the full database. Remove the directory named "geo-ip" if
 it has already been generated and run the gip command again. If the "geo-ip" directory is not found, it is regenerated
-from the "geo-ip.csv" database, which may take a few minutes. Be sure, the column headings of your database matches with
-those of the small default database file.
+from the "geo-ip.csv" dataset, which may take a few minutes. Be sure, the column headings of your dataset matches 
+those of the small default dataset file.
 
-By default, the database is located at build/Linux/gip/geo-ip. To change the location create /var/tmp/gip/default.conf
-and add the line geo-ip=/mnt/b/dat or where ever your want to put the data directory. Put the database file
+By default, the dataset is located at build/Linux/gip/geo-ip. To change the location create /var/tmp/gip/default.conf
+and add the line geo-ip=/mnt/b/dat or where ever your want to put the data directory. Put the dataset file
 "geo-ip.csv" into this directory, run the gip command and after a minute or two (~10 minutes on a raspberry pi), you'll
 find the "geo-ip" data directory next to the csv file.
 
@@ -37,8 +37,8 @@ Use your browser to access "http://localhost:10101/gip".
 
 See the supplied php scripts to tunnel through your firewall. TODO: refine this.
 
-Download the geo ip database "IP2Location LITE IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE"
-from here: https://lite.ip2location.com/ip2location-lite see Free Databases, DB11-LITE.
+Download the geo ip dataset "IP2Location LITE IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE"
+from here: https://lite.ip2location.com/ip2location-lite see "Free Databases", DB11-LITE.
 
 Here is a reference installation: https://softhub.com/gip/geo-ip.php?cmd=traffic
 
