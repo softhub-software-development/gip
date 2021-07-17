@@ -26,7 +26,8 @@ namespace GEOGRAPHY {
 
 Geo_ip_server::Geo_ip_server() :
     database(new Geo_ip_file_database()),
-    access_log_listener(new Geo_access_log_listener(this))
+    access_log_listener(new Geo_access_log_listener(this)),
+    auth_log_listener(new Geo_auth_log_listener(this))
 {
 }
 
@@ -47,6 +48,7 @@ bool Geo_ip_server::initialize()
         return false;
     service_control_event();
     Hal_module::module.instance->run(access_log_listener);
+    Hal_module::module.instance->run(auth_log_listener);
     return true;
 }
 
@@ -80,7 +82,7 @@ void Geo_ip_server::serve_page(const Http_service_request* sreq, Http_service_re
         } else if (cmd == "traffic") {
             serve_traffic(sreq, sres);
         } else if (cmd == "data") {
-            serve_access_data(sreq, sres);
+            serve_data(sreq, sres);
         } else {
             serve_error_page("invalid command", sres);
         }
@@ -175,22 +177,11 @@ void Geo_ip_server::serve_traffic(const Http_service_request* sreq, Http_service
     serve_content(content, "text/html", sres);
 }
 
-void Geo_ip_server::serve_access_data(const Http_service_request* sreq, Http_service_response* sres)
+void Geo_ip_server::serve_data(const Http_service_request* sreq, Http_service_response* sres)
 {
     stringstream stream;
     stream << "{ \"data\": [";
-    const Geo_locations& locations = access_log_listener->get_locations();
-    Geo_locations::const_iterator it = locations.begin();
-    Geo_locations::const_iterator tail = locations.end();
-    if (it != tail) {
-        const Geo_locations::value_type& pair = *it++;
-        output_access_data_element(pair, stream);
-        while (it != tail) {
-            const Geo_locations::value_type& pair = *it++;
-            stream << ",";
-            output_access_data_element(pair, stream);
-        }
-    }
+    output_data(stream);
     stream << "]}" << endl;
     const string& content = stream.str();
     serve_content(content, "application/json", sres);
@@ -355,6 +346,43 @@ void Geo_ip_server::output_location(const Geo_ip_entry* entry, const Http_servic
 #endif
 }
 
+void Geo_ip_server::output_position_data(ostream& stream, const Geo_locations& locations)
+{
+    Geo_locations::const_iterator it = locations.begin();
+    Geo_locations::const_iterator tail = locations.end();
+    if (it != tail) {
+        const Geo_locations::value_type& pair = *it++;
+        output_access_data_element(pair, stream);
+        while (it != tail) {
+            const Geo_locations::value_type& pair = *it++;
+            stream << ",";
+            output_access_data_element(pair, stream);
+        }
+    }
+}
+
+void Geo_ip_server::output_access_data(ostream& stream)
+{
+    const Geo_locations& locations = access_log_listener->get_locations();
+    output_position_data(stream, locations);
+}
+
+void Geo_ip_server::output_auth_data(ostream& stream)
+{
+    const Geo_locations& locations = auth_log_listener->get_locations();
+    output_position_data(stream, locations);
+}
+
+void Geo_ip_server::output_data(ostream& stream)
+{
+    output_access_data(stream);
+    const Geo_locations& access_locations = access_log_listener->get_locations();
+    const Geo_locations& auth_locations = auth_log_listener->get_locations();
+    if (!access_locations.empty() && !auth_locations.empty())
+        stream << ",";
+    output_auth_data(stream);
+}
+
 void Geo_ip_server::output_route(const Geo_ip_entry* entry, const Http_service_request* sreq, ostream& stream)
 {
 }
@@ -366,56 +394,67 @@ Geo_ip_entry_ref Geo_ip_server::unknown_ip_entry = new Geo_ip_entry();
 //
 
 Geo_log_data::Geo_log_data(const Address* address, const Geo_ip_entry* ip_entry) :
-    address(address), ip_entry(ip_entry), accesses(0), robot(false), download(false)
+    address(address), ip_entry(ip_entry), accesses(0)
 {
 }
 
-void Geo_log_data::set_link(const std::string& link)
+//
+// class Geo_access_log_data
+//
+
+Geo_access_log_data::Geo_access_log_data(const Address* address, const Geo_ip_entry* ip_entry) :
+    Geo_log_data(address, ip_entry), robot(false), download(false)
 {
-    this->link = link;
 }
 
-void Geo_log_data::set_referer(const std::string& referer)
-{
-    this->referer = referer;
-}
-
-void Geo_log_data::set_client(const std::string& client)
-{
-    this->client = client;
-}
-
-void Geo_log_data::check_link(const String_vector& sv)
+void Geo_access_log_data::check_link(const String_vector& sv)
 {
     string tmp = link;
     Strings::to_lower(tmp);
     download |= Strings::match_string_ext(tmp, sv);
 }
 
-void Geo_log_data::check_client(const String_vector& sv)
+void Geo_access_log_data::check_client(const String_vector& sv)
 {
     string tmp = client;
     Strings::to_lower(tmp);
     robot |= Strings::match_string(tmp, sv);
 }
 
-string Geo_log_data::get_img() const
+string Geo_access_log_data::get_img() const
 {
     return robot ? "robot.png" : (download ? "download.png" : "client.png");
 }
 
-void Geo_log_data::classify(BASE::IConfig* config)
+void Geo_access_log_data::classify(BASE::IConfig* config)
 {
     String_vector downloads;
     const string& dstr = config->get_parameter("geo-downloads", ".bin .zip .dmg");
-    clog << "geo-downloads: " << dstr << endl;
     String_util::split(dstr, downloads);
     check_link(downloads);
     String_vector bots;
     const string& bstr = config->get_parameter("geo-bots", "bot spider crawl grab");
-    clog << "geo-bots: " << bstr << endl;
     String_util::split(bstr, bots);
     check_client(bots);
+    increment_accesses();
+}
+
+//
+// class Geo_auth_log_data
+//
+
+Geo_auth_log_data::Geo_auth_log_data(const Address* address, const Geo_ip_entry* ip_entry) :
+    Geo_log_data(address, ip_entry)
+{
+}
+
+string Geo_auth_log_data::get_img() const
+{
+    return "burglar.png";
+}
+
+void Geo_auth_log_data::classify(BASE::IConfig* config)
+{
     increment_accesses();
 }
 
@@ -455,19 +494,6 @@ void Geo_log_listener::clear_locations()
     locations.clear();
 }
 
-Geo_log_data* Geo_log_listener::store(const Address* addr, Geo_ip_entry* entry)
-{
-    Geo_locations::const_iterator it = locations.find(addr);
-    Geo_log_data_ref data;
-    if (it == locations.end()) {
-        data = new Geo_log_data(addr, entry);
-        add_location(addr, data);
-    } else {
-        data = it->second;
-    }
-    return data;
-}
-
 //
 // class Geo_access_log_listener
 //
@@ -480,8 +506,61 @@ Geo_access_log_listener::Geo_access_log_listener(Geo_ip_server* server) :
 void Geo_access_log_listener::run()
 {
     IConfig* config = server->get_config();
-    const string& log = config->get_parameter("geo-log", "/var/log/apache2/access.log");
+    const string& log = config->get_parameter("geo-access-log", "/var/log/apache2/access.log");
     observer->tail(log, true);
+}
+
+void Geo_access_log_listener::store(const Address* addr, Geo_ip_entry* entry, const String_vector& columns)
+{
+    Geo_locations::const_iterator it = locations.find(addr);
+    Geo_log_data_ref data;
+    if (it == locations.end()) {
+        Geo_access_log_data* access_data = new Geo_access_log_data(addr, entry);
+        size_t ncols = columns.size();
+        if (ncols > 4)
+            access_data->set_link(columns[4]);
+        if (ncols > 7)
+            access_data->set_referer(columns[7]);
+        if (ncols > 8)
+            access_data->set_client(columns[8]);
+        add_location(addr, access_data);
+        data = access_data;
+    } else {
+        data = it->second;
+    }
+    IConfig* config = server->get_config();
+    data->classify(config);
+}
+
+//
+// class Geo_auth_log_listener
+//
+
+Geo_auth_log_listener::Geo_auth_log_listener(Geo_ip_server* server) :
+    Geo_log_listener(server), observer(new File_observer(new Geo_auth_log_consumer(this)))
+{
+}
+
+void Geo_auth_log_listener::run()
+{
+    IConfig* config = server->get_config();
+    const string& log = config->get_parameter("geo-auth-log", "/var/log/auth.log");
+    observer->tail(log, true);
+}
+
+void Geo_auth_log_listener::store(const Address* addr, Geo_ip_entry* entry, const String_vector& columns)
+{
+    Geo_locations::const_iterator it = locations.find(addr);
+    Geo_log_data_ref data;
+    if (it == locations.end()) {
+        Geo_auth_log_data* auth_data = new Geo_auth_log_data(addr, entry);
+        add_location(addr, auth_data);
+        data = auth_data;
+    } else {
+        data = it->second;
+    }
+    IConfig* config = server->get_config();
+    data->classify(config);
 }
 
 //
@@ -513,7 +592,6 @@ bool Geo_access_log_consumer::consumer_process(const String_vector& columns)
     if (ncols < 1)
         return false;
     const string& ip = columns[0];
-    clog << "consumer process: " << ip << endl;
     Address_const_ref addr = Address::create_from_dns_name(ip, 0);
     if (!addr)
         return true;
@@ -522,16 +600,35 @@ bool Geo_access_log_consumer::consumer_process(const String_vector& columns)
     Geo_ip_entry_ref entry = database->find_in_filesystem(addr);
     if (!entry)
         return true;
-    Geo_log_data_ref data = listener->store(addr, entry);
-    if (ncols > 4)
-        data->set_link(columns[4]);
-    if (ncols > 7)
-        data->set_referer(columns[7]);
-    if (ncols > 8)
-        data->set_client(columns[8]);
-    Geo_ip_server* service = listener->get_server();
-    IConfig* config = service->get_config();
-    data->classify(config);
+    listener->store(addr, entry, columns);
+    return true;
+}
+
+//
+// class Geo_auth_log_consumer
+//
+
+Geo_auth_log_consumer::Geo_auth_log_consumer(Geo_log_listener* listener) : Geo_log_consumer(listener)
+{
+}
+
+bool Geo_auth_log_consumer::consumer_process(const String_vector& columns)
+{
+    size_t ncols = columns.size();
+    if (ncols <= 12)
+        return false;
+    if (columns[5] != "Failed" && columns[6] != "password")
+        return false;
+    const string& ip = columns[12];
+    Address_const_ref addr = Address::create_from_dns_name(ip, 0);
+    if (!addr)
+        return true;
+    Geo_ip_server* server = listener->get_server();
+    Geo_ip_file_database* database = server->get_ip_database();
+    Geo_ip_entry_ref entry = database->find_in_filesystem(addr);
+    if (!entry)
+        return true;
+    listener->store(addr, entry, columns);
     return true;
 }
 
