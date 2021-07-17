@@ -24,7 +24,9 @@ namespace GEOGRAPHY {
 // class Geo_ip_server
 //
 
-Geo_ip_server::Geo_ip_server() : database(new Geo_ip_file_database()), log_listener(new Geo_log_listener(this))
+Geo_ip_server::Geo_ip_server() :
+    database(new Geo_ip_file_database()),
+    access_log_listener(new Geo_access_log_listener(this))
 {
 }
 
@@ -44,13 +46,13 @@ bool Geo_ip_server::initialize()
     if (!Http_server::initialize())
         return false;
     service_control_event();
-    Hal_module::module.instance->run(log_listener);
+    Hal_module::module.instance->run(access_log_listener);
     return true;
 }
 
 void Geo_ip_server::finalize()
 {
-    log_listener->stop();
+    access_log_listener->stop();
     Http_server::finalize();
 }
 
@@ -144,7 +146,7 @@ void Geo_ip_server::serve_location(const Http_service_request* sreq, Http_servic
 
 void Geo_ip_server::serve_traffic(const Http_service_request* sreq, Http_service_response* sres)
 {
-    File_observer* observer = log_listener->get_observer();
+    File_observer* observer = access_log_listener->get_observer();
     observer->refresh();
     const Url_parameter_map& parameter_map = sreq->get_parameter_map();
     const string& zoom_param = parameter_map.get("zoom");
@@ -177,7 +179,7 @@ void Geo_ip_server::serve_access_data(const Http_service_request* sreq, Http_ser
 {
     stringstream stream;
     stream << "{ \"data\": [";
-    const Geo_locations& locations = log_listener->get_locations();
+    const Geo_locations& locations = access_log_listener->get_locations();
     Geo_locations::const_iterator it = locations.begin();
     Geo_locations::const_iterator tail = locations.end();
     if (it != tail) {
@@ -263,8 +265,8 @@ void Geo_ip_server::output_script(ostream& stream, float zoom)
     stream << "    }" << endl;
     stream << endl;
     stream << "    function createAnnotationsAsync(responseText) {" << endl;
-    stream << "      var obj = JSON.parse(responseText);" << endl;
-    stream << "      var data = obj.data;" << endl;
+    stream << "      var anno = JSON.parse(responseText);" << endl;
+    stream << "      var data = anno.data;" << endl;
     stream << "      initAnnotations();" << endl;
     stream << "      for (var i = 0; i < data.length; i++) {" << endl;
     stream << "        var obj = data[i];" << endl;
@@ -406,10 +408,12 @@ void Geo_log_data::classify(BASE::IConfig* config)
 {
     String_vector downloads;
     const string& dstr = config->get_parameter("geo-downloads", ".bin .zip .dmg");
+    clog << "geo-downloads: " << dstr << endl;
     String_util::split(dstr, downloads);
     check_link(downloads);
     String_vector bots;
     const string& bstr = config->get_parameter("geo-bots", "bot spider crawl grab");
+    clog << "geo-bots: " << bstr << endl;
     String_util::split(bstr, bots);
     check_client(bots);
     increment_accesses();
@@ -420,7 +424,7 @@ void Geo_log_data::classify(BASE::IConfig* config)
 //
 
 Geo_log_listener::Geo_log_listener(Geo_ip_server* server) :
-    observer(new File_observer(new Geo_log_consumer(this))), server(server), done(false)
+    server(server), done(false)
 {
 }
 
@@ -428,6 +432,7 @@ void Geo_log_listener::run()
 {
     IConfig* config = server->get_config();
     const string& log = config->get_parameter("geo-log", "/var/log/apache2/access.log");
+    File_observer* observer = get_observer();
     observer->tail(log, true);
 }
 
@@ -464,6 +469,22 @@ Geo_log_data* Geo_log_listener::store(const Address* addr, Geo_ip_entry* entry)
 }
 
 //
+// class Geo_access_log_listener
+//
+
+Geo_access_log_listener::Geo_access_log_listener(Geo_ip_server* server) :
+    Geo_log_listener(server), observer(new File_observer(new Geo_access_log_consumer(this)))
+{
+}
+
+void Geo_access_log_listener::run()
+{
+    IConfig* config = server->get_config();
+    const string& log = config->get_parameter("geo-log", "/var/log/apache2/access.log");
+    observer->tail(log, true);
+}
+
+//
 // class Geo_log_consumer
 //
 
@@ -471,7 +492,22 @@ Geo_log_consumer::Geo_log_consumer(Geo_log_listener* listener) : listener(listen
 {
 }
 
-bool Geo_log_consumer::consumer_process(const String_vector& columns)
+void Geo_log_consumer::consumer_reset()
+{
+    const Geo_locations& locations = listener->get_locations();
+    clog << "consumer reset: " << locations.size() << endl;
+    listener->clear_locations();
+}
+
+//
+// class Geo_access_log_consumer
+//
+
+Geo_access_log_consumer::Geo_access_log_consumer(Geo_log_listener* listener) : Geo_log_consumer(listener)
+{
+}
+
+bool Geo_access_log_consumer::consumer_process(const String_vector& columns)
 {
     size_t ncols = columns.size();
     if (ncols < 1)
@@ -497,13 +533,6 @@ bool Geo_log_consumer::consumer_process(const String_vector& columns)
     IConfig* config = service->get_config();
     data->classify(config);
     return true;
-}
-
-void Geo_log_consumer::consumer_reset()
-{
-    const Geo_locations& locations = listener->get_locations();
-    clog << "consumer reset: " << locations.size() << endl;
-    listener->clear_locations();
 }
 
 }}

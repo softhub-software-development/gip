@@ -27,6 +27,11 @@ class File_config : public BASE::Configuration {
     std::string config_ext;
 
     virtual void apply_parameter(const std::string& key, const std::string& val);
+    
+    inline static int is_param_value(int c)
+    {
+        return isspace(c) || c == '\"' || c == '\'';
+    }
 
 public:
     File_config(const std::string& name = "default", const std::string& ext = ".conf");
@@ -42,4 +47,3 @@ public:
 }}
 
 #endif
-

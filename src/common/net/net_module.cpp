@@ -285,11 +285,13 @@ static void test_ssl_connection(Http_factory* factory)
     cout << "ssl access on port 8081" << endl;
 }
 
+#ifdef NETWORK_OBSERVER_SUPPORT
 static void test_network_observer()
 {
     Net_observer_ref observer(new Net_observer());
     observer->test();
 }
+#endif
 
 void Net_module::test()
 {

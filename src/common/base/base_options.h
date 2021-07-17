@@ -146,8 +146,6 @@ public:
     virtual int get_parameter(const std::string& key, int default_value) const = 0;
     virtual void set_parameter(const std::string& key, const std::string& value) = 0;
     virtual std::string get_parameter(const std::string& key, const std::string& default_value) const = 0;
-    virtual void set_parameter(const std::string& key, const char* value) = 0;
-    virtual std::string get_parameter(const std::string& key, const char* default_value) const = 0;
     virtual void set_parameter(const std::string& key, Config_param* value) = 0;
     virtual Config_param_ref get_parameter(const std::string& key, Config_param_ref default_value = 0) = 0;
     virtual std::string get_base_directory() const = 0;
@@ -182,8 +180,6 @@ public:
     int get_parameter(const std::string& key, int default_value) const;
     void set_parameter(const std::string& key, const std::string& value);
     std::string get_parameter(const std::string& key, const std::string& default_value) const;
-    void set_parameter(const std::string& key, const char* value);
-    std::string get_parameter(const std::string& key, const char* default_value) const;
     void set_parameter(const std::string& key, Config_param* value);
     Config_param_ref get_parameter(const std::string& key, Config_param_ref default_value);
     std::string get_base_directory() const;

@@ -45,7 +45,7 @@ protected:
     HAL::Mutex mutex;
     BASE::IConfig_ref config;
     Geo_ip_file_database_ref database;
-    Geo_log_listener_ref log_listener;
+    Geo_log_listener_ref access_log_listener;
 
     void service_control_event();
     void serve_default_page_content(std::ostream& stream);
@@ -56,7 +56,6 @@ protected:
     void serve_access_data(const NET::Http_service_request* sreq, NET::Http_service_response* sres);
     void serve_content(const std::string& content, const std::string& content_type, NET::Http_service_response* sres);
     void serve_error_page(const std::string& msg, NET::Http_service_response* sres);
-    void ensure_log_observer();
 
 public:
     Geo_ip_server();
@@ -110,8 +109,8 @@ public:
 
 class Geo_log_listener : public BASE::Object<HAL::Runnable> {
 
+protected:
     Geo_ip_server_weak_ref server;
-    UTIL::File_observer_ref observer;
     Geo_locations locations;
     bool done;
 
@@ -127,7 +126,23 @@ public:
     void clear_locations();
     Geo_log_data* store(const NET::Address* addr, Geo_ip_entry* entry);
     Geo_ip_server* get_server() { return server; }
+
+    virtual UTIL::File_observer* get_observer() = 0;
+};
+
+//
+// class Geo_access_log_listener
+//
+
+class Geo_access_log_listener : public Geo_log_listener {
+
+    UTIL::File_observer_ref observer;
+
+public:
+    Geo_access_log_listener(Geo_ip_server* server);
+
     UTIL::File_observer* get_observer() { return observer; }
+    void run();
 };
 
 //
@@ -136,14 +151,27 @@ public:
 
 class Geo_log_consumer : public BASE::Object<UTIL::IFile_consumer> {
 
+protected:
     Geo_log_listener_weak_ref listener;
+
+    Geo_log_consumer(Geo_log_listener* listener);
+
+    virtual bool consumer_process(const BASE::String_vector& cols) = 0;
+
+    void consumer_reset();
+};
+
+//
+// class Geo_access_log_consumer
+//
+
+class Geo_access_log_consumer : public Geo_log_consumer {
 
 protected:
     bool consumer_process(const BASE::String_vector& cols);
-    void consumer_reset();
 
 public:
-    Geo_log_consumer(Geo_log_listener* listener);
+    Geo_access_log_consumer(Geo_log_listener* listener);
 };
 
 }}

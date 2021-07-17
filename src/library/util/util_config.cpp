@@ -53,21 +53,17 @@ void File_config::read_parameters()
         lineno++;
         if (line.find("#") == 0)
             continue;
-        String_vector sv;
-        String_util::split(line, sv, "= ,;\t");
-        size_t svlen = sv.size();
-        if (svlen >= 1) {
-            string key = sv[0];
+        size_t idx = line.find('=');
+        if (idx != string::npos && idx > 0) {
+            string key = line.substr(0, idx);
             String_util::trim(key);
             String_util::to_lower(key);
             string val = "";
-            if (svlen >= 2) {
-                val = sv[1];
-                String_util::trim(val);
+            if (idx < line.length() - 1) {
+                val = line.substr(idx+1);
+                String_util::trim(val, is_param_value);
             }
             apply_parameter(key, val);
-        } else if (svlen > 0) {
-            clog << "error in config file line " << lineno << endl;
         }
     }
     clog << "done reading config file" << endl;

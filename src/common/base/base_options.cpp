@@ -221,16 +221,6 @@ string Configuration::get_parameter(const string& key, const string& default_val
     return string_param ? string_param->get_value() : default_value;
 }
 
-void Configuration::set_parameter(const string& key, const char* value)
-{
-    set_parameter(key, new Config_string_param(value));
-}
-
-string Configuration::get_parameter(const string& key, const char* default_value) const
-{
-    return get_parameter(key, string(default_value));
-}
-
 void Configuration::set_parameter(const string& key, Config_param* value)
 {
     params.remove(key);
