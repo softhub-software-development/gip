@@ -37,6 +37,10 @@ void Geo_ip_server::configure(IConfig* config)
     database->configure(config);
     Http_server::configure(config);
     this->set_user_agent("Sofhub-Geo-IP/1.0.0");
+    const string& dstr = config->get_parameter("geo-downloads", ".bin .zip .dmg");
+    String_util::split(dstr, downloads);
+    const string& bstr = config->get_parameter("geo-bots", "bot spider crawl grab");
+    String_util::split(bstr, bots);
 }
 
 bool Geo_ip_server::initialize()
@@ -426,15 +430,11 @@ string Geo_access_log_data::get_img() const
     return robot ? "robot.png" : (download ? "download.png" : "client.png");
 }
 
-void Geo_access_log_data::classify(BASE::IConfig* config)
+void Geo_access_log_data::classify(const Geo_ip_server* server)
 {
-    String_vector downloads;
-    const string& dstr = config->get_parameter("geo-downloads", ".bin .zip .dmg");
-    String_util::split(dstr, downloads);
+    const String_vector& downloads = server->get_downloads();
     check_link(downloads);
-    String_vector bots;
-    const string& bstr = config->get_parameter("geo-bots", "bot spider crawl grab");
-    String_util::split(bstr, bots);
+    const String_vector& bots = server->get_bots();
     check_client(bots);
     increment_accesses();
 }
@@ -453,7 +453,7 @@ string Geo_auth_log_data::get_img() const
     return "burglar.png";
 }
 
-void Geo_auth_log_data::classify(BASE::IConfig* config)
+void Geo_auth_log_data::classify(const Geo_ip_server* server)
 {
     increment_accesses();
 }
@@ -517,8 +517,12 @@ void Geo_access_log_listener::store(const Address* addr, Geo_ip_entry* entry, co
     if (it == locations.end()) {
         Geo_access_log_data* access_data = new Geo_access_log_data(addr, entry);
         size_t ncols = columns.size();
-        if (ncols > 4)
-            access_data->set_link(columns[4]);
+        if (ncols > 4) {
+            String_vector sv;
+            String_util::split(columns[4], sv);
+            if (sv.size() > 1)
+                access_data->set_link(sv[1]);
+        }
         if (ncols > 7)
             access_data->set_referer(columns[7]);
         if (ncols > 8)
@@ -528,8 +532,7 @@ void Geo_access_log_listener::store(const Address* addr, Geo_ip_entry* entry, co
     } else {
         data = it->second;
     }
-    IConfig* config = server->get_config();
-    data->classify(config);
+    data->classify(server);
 }
 
 //
@@ -559,8 +562,7 @@ void Geo_auth_log_listener::store(const Address* addr, Geo_ip_entry* entry, cons
     } else {
         data = it->second;
     }
-    IConfig* config = server->get_config();
-    data->classify(config);
+    data->classify(server);
 }
 
 //

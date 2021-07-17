@@ -45,6 +45,9 @@ class Geo_ip_server : public NET::Http_server {
     void output_auth_data(std::ostream& stream);
     void output_data(std::ostream& stream);
 
+    BASE::String_vector downloads;
+    BASE::String_vector bots;
+
 protected:
     HAL::Mutex mutex;
     BASE::IConfig_ref config;
@@ -66,6 +69,8 @@ public:
     Geo_ip_server();
 
     Geo_ip_file_database* get_ip_database() { return database; }
+    const BASE::String_vector& get_downloads() const { return downloads; }
+    const BASE::String_vector& get_bots() const { return bots; }
     BASE::IConfig* get_config() { return config; }
     void configure(BASE::IConfig* config);
     bool initialize();
@@ -91,7 +96,7 @@ public:
     int get_accesses() const { return accesses; }
 
     virtual std::string get_img() const = 0;
-    virtual void classify(BASE::IConfig* config) = 0;
+    virtual void classify(const Geo_ip_server* server) = 0;
 };
 
 //
@@ -119,7 +124,7 @@ public:
     void set_client(const std::string& client) { this->client = client; }
     const std::string& get_client() const { return client; }
     std::string get_img() const;
-    void classify(BASE::IConfig* config);
+    void classify(const Geo_ip_server* server);
 };
 
 //
@@ -132,7 +137,7 @@ public:
     Geo_auth_log_data(const NET::Address* address, const Geo_ip_entry* ip_entry);
 
     std::string get_img() const;
-    void classify(BASE::IConfig* config);
+    void classify(const Geo_ip_server* server);
 };
 
 //
@@ -149,13 +154,13 @@ protected:
 public:
     Geo_log_listener(Geo_ip_server* server);
 
+    Geo_ip_server* get_server() { return server; }
     void run();
     void fail(const std::exception& ex);
     void stop();
     void add_location(const NET::Address* ip, Geo_log_data* data);
     const Geo_locations& get_locations() const { return locations; }
     void clear_locations();
-    Geo_ip_server* get_server() { return server; }
 
     virtual void store(const NET::Address* addr, Geo_ip_entry* entry, const BASE::String_vector& columns) = 0;
     virtual UTIL::File_observer* get_observer() = 0;
