@@ -513,25 +513,24 @@ void Geo_access_log_listener::run()
 void Geo_access_log_listener::store(const Address* addr, Geo_ip_entry* entry, const String_vector& columns)
 {
     Geo_locations::const_iterator it = locations.find(addr);
-    Geo_log_data_ref data;
+    Geo_access_log_data_ref data;
     if (it == locations.end()) {
-        Geo_access_log_data* access_data = new Geo_access_log_data(addr, entry);
-        size_t ncols = columns.size();
-        if (ncols > 4) {
-            String_vector sv;
-            String_util::split(columns[4], sv);
-            if (sv.size() > 1)
-                access_data->set_link(sv[1]);
-        }
-        if (ncols > 7)
-            access_data->set_referer(columns[7]);
-        if (ncols > 8)
-            access_data->set_client(columns[8]);
-        add_location(addr, access_data);
-        data = access_data;
+        data = new Geo_access_log_data(addr, entry);
+        add_location(addr, data);
     } else {
-        data = it->second;
+        data = it->second.cast<Geo_access_log_data>();
     }
+    size_t ncols = columns.size();
+    if (ncols > 4) {
+        String_vector sv;
+        String_util::split(columns[4], sv);
+        if (sv.size() > 1)
+            data->set_link(sv[1]);
+    }
+    if (ncols > 7)
+        data->set_referer(columns[7]);
+    if (ncols > 8)
+        data->set_client(columns[8]);
     data->classify(server);
 }
 
@@ -554,13 +553,12 @@ void Geo_auth_log_listener::run()
 void Geo_auth_log_listener::store(const Address* addr, Geo_ip_entry* entry, const String_vector& columns)
 {
     Geo_locations::const_iterator it = locations.find(addr);
-    Geo_log_data_ref data;
+    Geo_auth_log_data_ref data;
     if (it == locations.end()) {
-        Geo_auth_log_data* auth_data = new Geo_auth_log_data(addr, entry);
-        add_location(addr, auth_data);
-        data = auth_data;
+        data = new Geo_auth_log_data(addr, entry);
+        add_location(addr, data);
     } else {
-        data = it->second;
+        data = it->second.cast<Geo_auth_log_data>();
     }
     data->classify(server);
 }

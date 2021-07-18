@@ -22,6 +22,8 @@ namespace GEOGRAPHY {
 FORWARD_CLASS(Geo_ip_server);
 FORWARD_CLASS(Geo_access_server);
 FORWARD_CLASS(Geo_log_data);
+FORWARD_CLASS(Geo_access_log_data);
+FORWARD_CLASS(Geo_auth_log_data);
 FORWARD_CLASS(Geo_log_listener);
 FORWARD_CLASS(Geo_log_consumer);
 
