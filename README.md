@@ -6,7 +6,7 @@ Gip is an Apache log file analyzer for Linux, in particular for small platforms 
 When launched without command line arguments or using the lauch script gip.sh, gip runs as a server process.
 Given an argument like "gip google.com" or a numeric IP address, it prints the country and city the address is registered in.
 
-![gip-map](https://user-images.githubusercontent.com/61689577/126057090-4bec81f0-4dd8-4680-aabf-3b65fa3b3d55.png)
+![gip-map](https://user-images.githubusercontent.com/61689577/126057135-3080e659-66fe-447d-8e17-c5403cd9697c.png)
 
 To compile the source code, follow these steps:
 
@@ -69,7 +69,6 @@ softhub.com, Germany
 91.65.9.254 Berlin, Berlin, Germany<br/>
 145.254.3.66 Eschborn, Hessen, Germany<br/>
 72.14.194.138 Mountain View, California, United States<br/>
-<br/>
 <h3>Print the geo coordinates:</h3>
 <p># gip -g softhub.com</p>
 52.5244 13.4105
