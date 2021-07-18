@@ -30,10 +30,11 @@ find the "geo-ip" data directory next to the csv file.
 
 IMPORTANT: The "geo-ip" directory holds a lot of sub directories and files, therefore the filesystem must be configured
 with a high number of inodes. Make sure to check the log files at "/var/tmp/gip/log/*.log" for error messages. Issue
-a df -i to check if the filesystem ran out of inodes.
+a "df -i" to check if the filesystem ran out of inodes.
 
-To run the gip server, lauch gip without parameters or use the gip.sh script to lauch the server.
-Use your browser to access "http://localhost:10101/gip".
+To run the gip server, lauch gip without parameters or use the gip.sh script to lauch the server then point your
+browser to "http://localhost:10101/gip". The gip server monitors "/var/log/apache2/access.log" for web accesses and
+"/var/log/auth.log" for potential fraudulent failed login attempts.
 
 See the supplied php scripts to tunnel through your firewall. TODO: refine this.
 
