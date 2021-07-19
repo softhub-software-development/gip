@@ -614,12 +614,18 @@ Geo_auth_log_consumer::Geo_auth_log_consumer(Geo_log_listener* listener) : Geo_l
 
 bool Geo_auth_log_consumer::consumer_process(const String_vector& columns)
 {
+    // report potential break in attempts
     size_t ncols = columns.size();
     if (ncols <= 12)
         return false;
-    if (columns[5] != "Failed" && columns[6] != "password")
+    int ip_idx = -1;
+    if (columns[5] == "Failed" && columns[6] == "password")
+        ip_idx = 12;
+    if (columns[5] == "Did" && columns[6] == "not" && columns[7] == "receive" && columns[8] == "identification")
+        ip_idx = 11;
+    if (ip_idx < 0)
         return false;
-    const string& ip = columns[12];
+    const string& ip = columns[ip_idx];
     Address_const_ref addr = Address::create_from_dns_name(ip, 0);
     if (!addr)
         return true;
