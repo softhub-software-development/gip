@@ -51,8 +51,9 @@ usage: gip [-C] [-c] [-g] [-h] [-tT] [ip-address-or-domain ...]<br/>
        gip invoked with no arguments starts the gip server<br/>
        -C print country<br/>
        -c print city<br/>
+       -d print domain name if possible<br/>
        -g print geo coordinates only<br/>
-       -d print domain info if possible<br/>
+       -i print domain info if possible<br/>
        -h print this help information<br/>
        -t trace route omitting duplicates<br/>
        -T trace route<br/>
