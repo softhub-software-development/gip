@@ -33,7 +33,8 @@ Geo_report::Geo_report(ostream& rout) :
     option_report_city(false),
     option_report_state(false),
     option_coords(false),
-    option_domain(false)
+    option_domain(false),
+    option_info(false)
 {
 }
 
@@ -73,12 +74,9 @@ void Geo_report::output_location(const Geo_ip_entry* entry, bool all_info)
 
 void Geo_report::output_info(const string& ip, const Address* addr, const Geo_ip_entry* entry)
 {
-    if (option_domain) {
-        rout << addr->to_string(false);
+    rout << (option_domain ? ip : addr->to_string(false));
+    if (option_info)
         output_ns_domain_name(ip);
-    } else {
-        rout << ip;
-    }
     bool all_info = !option_report_country && !option_report_city;
     output_location(entry, all_info);
 }
@@ -271,10 +269,11 @@ Geo_report* Geo_report_factory::create_report(const Geo_config* config)
     report->option_report_city = config->get_bool_parameter("c");
     report->option_report_state = config->get_bool_parameter("s");
     report->option_domain = config->get_bool_parameter("d");
+    report->option_info = config->get_bool_parameter("i");
     report->option_coords = minus_g;
     return report;
 }
 
-const string Geo_report_factory::all_options = "cCgdtT";
+const string Geo_report_factory::all_options = "cCgditT";
 
 }}

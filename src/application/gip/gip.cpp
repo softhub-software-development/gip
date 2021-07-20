@@ -103,9 +103,10 @@ static void usage()
     cout << "       gip invoked with no arguments starts the gip server" << endl;
     cout << "       -C print country" << endl;
     cout << "       -c print city" << endl;
-    cout << "       -g print geo coordinates only" << endl;
     cout << "       -d print domain name if possible" << endl;
+    cout << "       -g print geo coordinates only" << endl;
     cout << "       -h print this help information" << endl;
+    cout << "       -i print domain info if possible" << endl;
     cout << "       -t trace route omitting duplicates" << endl;
     cout << "       -T trace route" << endl;
 }

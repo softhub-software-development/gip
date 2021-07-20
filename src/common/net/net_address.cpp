@@ -380,11 +380,12 @@ const std::string Address_ip4::to_string(bool with_port_number) const
     const char* result = inet_ntop(AF_INET, &u.addr_in.sin_addr, host, INET_ADDRSTRLEN);
     assert(result != 0);
 //  char* host = ::inet_ntoa(u.addr_in.sin_addr);
-    int port = ntohs(u.addr_in.sin_port);
     stringstream stream;
     stream << host;
-    if (with_port_number)
+    if (with_port_number) {
+        int port = ntohs(u.addr_in.sin_port);
         stream << ":" << port;
+    }
     return stream.str();
 }
 

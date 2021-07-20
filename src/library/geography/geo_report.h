@@ -41,6 +41,7 @@ protected:
     bool option_report_state;
     bool option_coords;
     bool option_domain;
+    bool option_info;
 
     void output_ns_domain_name(const std::string& ip);
     void output_domain_name_info(const std::string& info);
