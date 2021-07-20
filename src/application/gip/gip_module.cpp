@@ -37,14 +37,12 @@ Gip_module::~Gip_module()
 
 void Gip_module::init_logging()
 {
-    string app_path;
-    File_path::app_data_path(app_path);
-#ifdef PLATFORM_LINUX
-    const string& log_path = File_path::concat(app_path, "/gip/log/");
-#else
-    const string& log_path = File_path::concat(app_path, "log/");   // TODO
-#endif
-    Logging::init(log_path);
+    string log_path;
+    bool success = File_path::app_log_path(log_path, true);
+    if (success)
+        Logging::init(log_path);
+    else
+        cout << "logging unavailable" << std::endl;
 }
 
 #ifdef _DEBUG

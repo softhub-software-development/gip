@@ -87,6 +87,7 @@ public:
 #endif
 #endif
     static bool app_data_path(std::string& path, bool create_flag = false);
+    static bool app_log_path(std::string& path, bool create_flag = false);
     static bool my_documents_path(std::string& path, bool create_flag = false);
     static bool my_pictures_path(std::string& path, bool create_flag = false);
     static bool my_music_path(std::string& path, bool create_flag = false);

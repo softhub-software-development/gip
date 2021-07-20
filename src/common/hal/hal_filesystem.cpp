@@ -443,6 +443,20 @@ bool File_path::app_data_path(string& path, bool create_flag)
 #endif
 }
 
+bool File_path::app_log_path(string& path, bool create_flag)
+{
+    string app_path;
+    bool success = File_path::app_data_path(app_path, create_flag);
+    if (!success)
+        return false;
+#ifdef PLATFORM_LINUX
+    path = File_path::concat(app_path, "/gip/log/");
+#else
+    path = File_path::concat(app_path, "log/");
+#endif
+    return true;
+}
+
 bool File_path::my_documents_path(string& path, bool create_flag)
 {
 #ifdef PLATFORM_WIN
