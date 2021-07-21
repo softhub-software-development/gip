@@ -1,13 +1,15 @@
 Clean Code License
 
 The Clean Code License (CCL) is based on the concept of typographical licenses. In short, you, the licensee,
-is granted the rights to copy and modify the code, as long as your changes and the code you copy parts or all
-from this project to, adheres completely to the typographical rules given by the source code from this project.
+is granted the right to copy and modify the code, as long as your changes and the code you copy parts or all
+from this project to, adheres completely to the typographical rules implicitly given by the source code from
+this project.
 
 There are no explicit typographical rules specified by the project but, the rules are intrinsically given
-by how the code is written. The licensee looses all rights for reusing all or parts of the code, if he chooses
-to typographically modify the code or embeds code snippets from this project into code which does not adhere to
-the typographic rules from this project.
+by how the code is formatted. The licensee looses all rights for reusing all or parts of the code, if he chooses
+to typographically modify the code, adds code which does not adhere to the rules implicitly given by the source
+code in this project or embeds code snippets from this project into code which does not follow the typographic
+rules from this project.
 
 Background: Various deviations from the typographic rules to lay out source code in different programming languages
 are in use. Though some of them have their well founded origins, others evolved purely out of malice. We therefore
