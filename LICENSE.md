@@ -67,17 +67,17 @@ int some_function(int x)
 
 HRC:
 <pre>
-    if (x > 0) {
-        do_a();
-        do_b();
-    }
+if (x > 0) {
+    do_a();
+    do_b();
+}
 </pre>
 
 Example for MRC:
 <pre>
-    if (x > 0)
-    {           // yeah, you did Pascal before, right?
-        do_a();
-        do_b();
-    }
+if (x > 0)
+{           // yeah, you did Pascal before, right?
+    do_a();
+    do_b();
+}
 </pre>
