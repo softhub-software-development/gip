@@ -1,9 +1,9 @@
 Clean Code License
 
 The Clean Code License (CCL) is based on the concept of typographical licenses. In short, you, the licensee,
-is granted the right to copy and modify the code, as long as your changes and the code you copy parts or all
-from this project to, adheres completely to the typographical rules implicitly given by the source code from
-this project.
+is granted the right to copy and modify the code, as long as your changes, and the code you copy in part or in full,
+from this project to another project, adheres completely to the typographical rules implicitly given by the source
+code from this project.
 
 There are no explicit typographical rules specified by the project but the rules are intrinsically given
 by how the code is formatted. The licensee looses all rights for reusing all or parts of the code, if he chooses
@@ -14,7 +14,7 @@ rules from this project.
 Background: Various deviations from the typographic rules to lay out source code in different programming languages
 are in use. Though some of them have their well founded origins, others evolved purely out of malice. We therefore
 distinguish between Human Readable Code (HRC) and Machine Readable Code (MRC), sometimes also referred to as
-Monkey Readable Code. As we are humans, we prefer HRC on should think. Knowing that, and taking advantage of
+Monkey Readable Code. As we are humans, we prefer HRC one should think. Knowing that, and taking advantage of
 our human weaknesses, some programmers came up with totally screwed up coding conventions, which they sarcastically
 refer to as clean code. Once such a screwed up coding convention can be implemented in a software development team,
 it is easy to take over any project and kick out those programmers who do it right. The typographic license is
@@ -29,3 +29,55 @@ In special cases like Objective-C, the rules are, at least in this project, purp
 sticking to what one learns, if one ever read a thing called "book". The inventor of Objective-C was certainly not
 an idol in this sense, as he chose to consistently do the opposit of what one would expect somebody to do who ever
 read a book.
+
+Here are some examples how to spot monkey code (or MRC):
+
+HRC:
+<pre>
+if (x > 0)
+    some_function(x);
+</pre>
+
+Some variations of MRC:
+<pre>
+if ( x > 0)    // see the monkey? one nonsense blank
+    some_function(x);
+or
+if ( x > 0 )   // see the monkeys? even two nonsense blanks
+    some_function( x );
+</pre>
+
+HRC:
+<pre>
+int some_function(int x)
+{
+    // do something usefull and return
+    return 0;
+}
+</pre>
+
+Example for MRC:
+<pre>
+int some_function(int x)
+{
+    // do something usefull and return
+    return( 0 );   // what the fuck is this supposed to mean?
+}
+</pre>
+
+HRC:
+<pre>
+    if (x > 0) {
+        do_a();
+        do_b();
+    }
+</pre>
+
+Example for MRC:
+<pre>
+    if (x > 0)
+    {           // yeah, you did Pascal before, right?
+        do_a();
+        do_b();
+    }
+</pre>
