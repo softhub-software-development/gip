@@ -93,7 +93,7 @@ void Geo_report::output_ns_domain_name(const string& ip)
     getline(result, line);
     getline(result, line);
     rout << " \"";
-    if (line.find("server can't find")) {
+    if (line.find("server can't find") != string::npos) {
         output_whois_domain(ip);
     } else {
         getline(result, line);
