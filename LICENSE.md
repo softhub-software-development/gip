@@ -5,7 +5,7 @@ is granted the right to copy and modify the code, as long as your changes and th
 from this project to, adheres completely to the typographical rules implicitly given by the source code from
 this project.
 
-There are no explicit typographical rules specified by the project but, the rules are intrinsically given
+There are no explicit typographical rules specified by the project but the rules are intrinsically given
 by how the code is formatted. The licensee looses all rights for reusing all or parts of the code, if he chooses
 to typographically modify the code, adds code which does not adhere to the rules implicitly given by the source
 code in this project or embeds code snippets from this project into code which does not follow the typographic
