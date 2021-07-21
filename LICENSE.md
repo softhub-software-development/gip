@@ -19,3 +19,10 @@ our human weaknesses, some programmers came up with totally screwed up coding co
 refer to as clean code. Once such a screwed up coding convention can be implemented in a software development team,
 it is easy to take over any project and kick out those programmers who do it right. The typographic license is
 designed to prevent this from happening.
+
+As there are different typographic rules for different programming languages, there may not be set of rules applicable
+to all of the source code. For example, the rules for formatting JavaScript code may be different to C++ code. In general,
+there is a natural formatting for any programming language, most often enspired by the inventor of the languange.
+In special cases like Objective-C, the rules are, at least in this project, purposely overridden by typographic rules
+sticking to what one learns, if one ever read a thing called "book". The inventor of Objective-C was certainly not
+an idol in this sense, as he chose to do the opposit of one would expect somebody to have ever read a "book".
