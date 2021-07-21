@@ -25,4 +25,5 @@ to all of the source code. For example, the rules for formatting JavaScript code
 there is a natural formatting for any programming language, most often enspired by the inventor of the languange.
 In special cases like Objective-C, the rules are, at least in this project, purposely overridden by typographic rules
 sticking to what one learns, if one ever read a thing called "book". The inventor of Objective-C was certainly not
-an idol in this sense, as he chose to do the opposit of one would expect somebody to have ever read a book.
+an idol in this sense, as he chose to consistently do the opposit of what one would expect somebody to do who ever
+read a book.
