@@ -1,15 +1,15 @@
 Clean Code License
 
-The Clean Code License (CCL) is based on the concept of typographical licenses. In short, you, the licensee,
-is granted the right to copy and modify the code, as long as your changes, and the code you copy in part or in full,
-from this project to another project, adheres completely to the typographical rules implicitly given by the source
-code from this project.
+The Clean Code License (CCL) is based on the concept of writing typographically acceptable code. In short, you, the
+licensee, is granted the right to copy and modify the code, as long as your changes, and the code you copy in part or
+in full, from this project to another project, adheres completely to the typographical rules implicitly given by the
+source code from this project.
 
 There are no explicit typographical rules specified by the project but the rules are intrinsically given
 by how the code is formatted. The licensee looses all rights for reusing all or parts of the code, if he chooses
 to typographically modify the code, adds code which does not adhere to the rules implicitly given by the source
-code in this project or embeds code snippets from this project into code which does not follow the typographic
-rules from this project.
+code in this project or embeds code snippets from this project into code which does not follow these typographic
+rules.
 
 Background: Various deviations from the typographic rules to lay out source code in different programming languages
 are in use. Though some of them have their well founded origins, others evolved purely out of malice. We therefore
@@ -27,8 +27,8 @@ of the languange.
 
 In special cases like Objective-C, the rules are, at least in this project, purposely overridden by typographic rules
 sticking to what one learns, if one ever read a thing called "book". The inventor of Objective-C was certainly not
-an idol in this sense, as he chose to consistently do the opposit of what one would expect somebody to do, who ever
-read a book and therby learned the rules of typography.
+an idol in this sense, as he chose to consistently do the opposit of what one would expect from someone who picked
+up the rules of typography from reading.
 
 Here are some examples how to spot monkey code (or MRC):
 
