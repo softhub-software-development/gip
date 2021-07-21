@@ -28,7 +28,7 @@ of the languange.
 In special cases like Objective-C, the rules are, at least in this project, purposely overridden by typographic rules
 sticking to what one learns, if one ever read a thing called "book". The inventor of Objective-C was certainly not
 an idol in this sense, as he chose to consistently do the opposit of what one would expect somebody to do who ever
-read a book and therby learned the implicit rules of typography.
+read a book and therby learned the rules of typography.
 
 Here are some examples how to spot monkey code (or MRC):
 
@@ -68,7 +68,7 @@ Example for MRC:
 int some_function(int x)
 {
     // do something usefull and return
-    return( 0 );   // what the fuck is this supposed to mean?
+    return( 0 );   // what the fuck is the purpose of that, except for littering?
 }
 </pre>
 
