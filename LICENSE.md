@@ -45,7 +45,6 @@ if ( x > 0)    // see the monkey? one nonsense blank
 or
 if ( x > 0 )   // see the monkeys? even two nonsense blanks
     some_function( x );
-</pre>
 or, some do not even shy away from
 if( x > 0)
     some_function ( x );
