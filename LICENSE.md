@@ -46,7 +46,7 @@ or
 if ( x > 0 )   // see the monkeys? even two nonsense blanks
     some_function( x );
 or, some do not even shy away from
-if( x > 0)
+if( x > 0)     // that's highly monkey, isn't it?
     some_function ( x );
 </pre>
 
