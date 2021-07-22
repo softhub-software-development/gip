@@ -149,6 +149,9 @@ void Geo_report::output_whois_domain_info(const string& info)
         return;
     if (output_whois_domain_info_entry(info, "role:"))
         return;
+    if (output_whois_domain_info_entry(info, "Admin Organization:"))
+        return;
+    rout << " \"n/a\"";
 }
 
 bool Geo_report::output_whois_domain_info_entry(const string& info, const string& match)
@@ -172,6 +175,8 @@ void Geo_report::output_whois_domain_info_value(const string& line)
     if (v.size() >= 2) {
         size_t idx = line.find(v[1]);
         rout << " \"" << line.substr(idx) << "\"";
+    } else {
+        rout << " \"n/a\"";
     }
 }
 
