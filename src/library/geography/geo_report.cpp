@@ -74,9 +74,11 @@ void Geo_report::output_location(const Geo_ip_entry* entry, bool all_info)
 
 void Geo_report::output_info(const string& ip, const Address* addr, const Geo_ip_entry* entry)
 {
-    rout << (option_domain ? ip : addr->to_string(false));
-    if (option_info)
+    rout << addr->to_string(false);
+    if (option_domain)
         output_ns_domain_name(ip);
+    if (option_info)
+        output_whois_domain(ip);
     bool all_info = !option_report_country && !option_report_city;
     output_location(entry, all_info);
 }
@@ -97,7 +99,7 @@ void Geo_report::output_ns_domain_name(const string& ip)
         getline(result, line);
         output_domain_name_info(line);
     } else {
-        output_whois_domain(ip);
+        rout << "n/a";
     }
     rout << "\"";
 }
@@ -139,6 +141,8 @@ void Geo_report::output_whois_domain_info(const string& info)
         return;
     if (output_whois_domain_info_entry(info, "org-name:"))
         return;
+    if (output_whois_domain_info_entry(info, "organisation:"))
+        return;
     if (output_whois_domain_info_entry(info, "person:"))
         return;
     if (output_whois_domain_info_entry(info, "netname:"))
@@ -167,7 +171,7 @@ void Geo_report::output_whois_domain_info_value(const string& line)
     Strings::split(line, v);
     if (v.size() >= 2) {
         size_t idx = line.find(v[1]);
-        rout << line.substr(idx);
+        rout << " \"" << line.substr(idx) << "\"";
     }
 }
 
