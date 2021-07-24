@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		8316FDB323B9390200484084 /* geo_ip_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8316FDB123B9390100484084 /* geo_ip_server.cpp */; };
 		835380312403C1320030FE58 /* geo_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8353802F2403C1320030FE58 /* geo_config.cpp */; };
+		836E84F126AC73E100B0300B /* geo_ip_logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 836E84F026AC73E100B0300B /* geo_ip_logging.cpp */; };
 		837439F91E2D69F400B38D37 /* base_class_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837439D81E2D69F400B38D37 /* base_class_registry.cpp */; };
 		837439FA1E2D69F400B38D37 /* base_exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837439DE1E2D69F400B38D37 /* base_exception.cpp */; };
 		837439FC1E2D69F400B38D37 /* base_module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 837439E21E2D69F400B38D37 /* base_module.cpp */; };
@@ -89,6 +90,8 @@
 		8316FDB223B9390100484084 /* geo_ip_server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geo_ip_server.h; sourceTree = "<group>"; };
 		8353802F2403C1320030FE58 /* geo_config.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = geo_config.cpp; sourceTree = "<group>"; };
 		835380302403C1320030FE58 /* geo_config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geo_config.h; sourceTree = "<group>"; };
+		836E84EF26AC73E100B0300B /* geo_ip_logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geo_ip_logging.h; sourceTree = "<group>"; };
+		836E84F026AC73E100B0300B /* geo_ip_logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geo_ip_logging.cpp; sourceTree = "<group>"; };
 		837439BB1E2D697400B38D37 /* GeoIP */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GeoIP; sourceTree = BUILT_PRODUCTS_DIR; };
 		837439D51E2D69F400B38D37 /* base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = "<group>"; };
 		837439D61E2D69F400B38D37 /* base_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base_array.h; sourceTree = "<group>"; };
@@ -365,6 +368,8 @@
 				83743A0F1E2D6A3000B38D37 /* geo_ip_database.cpp */,
 				8316FDB223B9390100484084 /* geo_ip_server.h */,
 				8316FDB123B9390100484084 /* geo_ip_server.cpp */,
+				836E84EF26AC73E100B0300B /* geo_ip_logging.h */,
+				836E84F026AC73E100B0300B /* geo_ip_logging.cpp */,
 				83743A121E2D6A3000B38D37 /* geo_module.h */,
 				83743A111E2D6A3000B38D37 /* geo_module.cpp */,
 				83743A131E2D6A3000B38D37 /* geo_parse_types.h */,
@@ -580,6 +585,7 @@
 				8398C72B23D4E68D00D28B4F /* gip_module.cpp in Sources */,
 				83904F6E23E5D9D200FAF912 /* util_file.cpp in Sources */,
 				83743A1B1E2D6A3000B38D37 /* geo_coordinate_parser.lpp in Sources */,
+				836E84F126AC73E100B0300B /* geo_ip_logging.cpp in Sources */,
 				83C3E4831E2DEC4500C48B4A /* net_adapter.cpp in Sources */,
 				83C3E5101E2DEDC800C48B4A /* hal_service.cpp in Sources */,
 				83C3E5151E2DEDC800C48B4A /* hal_usb.cpp in Sources */,
