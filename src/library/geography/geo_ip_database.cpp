@@ -250,13 +250,13 @@ int Geo_ip_ram_database::import(const string& filename)
         Geo_ip_entry* entry = new Geo_ip_entry(range, country_code, country, state, city, zip, tz, coords);
         data->append(entry);
     }
-    rebuild();
     stream.close();
     return 0;
 }
 
 int Geo_ip_ram_database::rebuild()
 {
+    // TODO: this is old code and should be removed
     const string& data_dir = geo_data_dir();
     if (!File_path::ensure_dir(data_dir))
         return -5;

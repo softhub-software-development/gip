@@ -109,9 +109,11 @@ void Geo_module::recover_state()
     cout << "recover state from " << data_file << std::endl;
     if (db->import(data_file)) {
         cout << "import failed" << std::endl;
-    } else {
-        Geo_directory_serializer serializer(data_dir);
+    } else if (File_path::ensure_dir(data_dir)) {
+        Geo_ip_serializer serializer(data_dir);
         db->serialize(&serializer);
+    } else {
+        cout << "cannot create " << data_dir << std::endl;
     }
 }
 
