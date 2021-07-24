@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "geo_module.h"
 #include "geo_ip_server.h"
+#include "geo_ip_serialization.h"
 #include <base/base.h>
 
 #ifndef NO_GEO_PARSER

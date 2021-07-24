@@ -28,6 +28,7 @@
 		83743A1E1E2D6A3000B38D37 /* geo_module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83743A111E2D6A3000B38D37 /* geo_module.cpp */; };
 		83904F6E23E5D9D200FAF912 /* util_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83904F6C23E5D9D100FAF912 /* util_file.cpp */; };
 		8398C72B23D4E68D00D28B4F /* gip_module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8398C72723D4E68D00D28B4F /* gip_module.cpp */; };
+		839B618526AC7C39001F33DF /* geo_ip_serialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 839B618326AC7C38001F33DF /* geo_ip_serialization.cpp */; };
 		839E8AE324030CAD0090146F /* util_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 839E8AE124030CAD0090146F /* util_config.cpp */; };
 		83B17FD422D142910060636E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83B17FD322D142910060636E /* IOKit.framework */; };
 		83B7680B20E6070A00FE6D10 /* base_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 83B7680920E6070900FE6D10 /* base_io.cpp */; };
@@ -150,6 +151,8 @@
 		8398C72723D4E68D00D28B4F /* gip_module.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gip_module.cpp; path = ../../../src/application/gip/gip_module.cpp; sourceTree = "<group>"; };
 		8398C72923D4E68D00D28B4F /* gip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gip.h; path = ../../../src/application/gip/gip.h; sourceTree = "<group>"; };
 		8398C72A23D4E68D00D28B4F /* gip_module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gip_module.h; path = ../../../src/application/gip/gip_module.h; sourceTree = "<group>"; };
+		839B618326AC7C38001F33DF /* geo_ip_serialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geo_ip_serialization.cpp; sourceTree = "<group>"; };
+		839B618426AC7C39001F33DF /* geo_ip_serialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geo_ip_serialization.h; sourceTree = "<group>"; };
 		839E8AE124030CAD0090146F /* util_config.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = util_config.cpp; sourceTree = "<group>"; };
 		839E8AE224030CAD0090146F /* util_config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util_config.h; sourceTree = "<group>"; };
 		83B17FD322D142910060636E /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -370,6 +373,8 @@
 				8316FDB123B9390100484084 /* geo_ip_server.cpp */,
 				836E84EF26AC73E100B0300B /* geo_ip_logging.h */,
 				836E84F026AC73E100B0300B /* geo_ip_logging.cpp */,
+				839B618426AC7C39001F33DF /* geo_ip_serialization.h */,
+				839B618326AC7C38001F33DF /* geo_ip_serialization.cpp */,
 				83743A121E2D6A3000B38D37 /* geo_module.h */,
 				83743A111E2D6A3000B38D37 /* geo_module.cpp */,
 				83743A131E2D6A3000B38D37 /* geo_parse_types.h */,
@@ -604,6 +609,7 @@
 				83C3E5091E2DEDC800C48B4A /* hal_filesystem.cpp in Sources */,
 				83743A1D1E2D6A3000B38D37 /* geo_ip_database.cpp in Sources */,
 				83C3E50D1E2DEDC800C48B4A /* hal_pathname.cpp in Sources */,
+				839B618526AC7C39001F33DF /* geo_ip_serialization.cpp in Sources */,
 				83C3E5181E2DEDC800C48B4A /* hal_utils.mm in Sources */,
 				83C3E5191E2DEDC800C48B4A /* Makefile in Sources */,
 				83C3E50E1E2DEDC800C48B4A /* hal_pathname.mm in Sources */,
