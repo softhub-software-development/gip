@@ -206,11 +206,18 @@ public:
 
 class Geo_log_consumer : public BASE::Object<UTIL::IFile_consumer> {
 
+    bool process_element(std::istream& stream, std::string& str);
+    bool process_bracketed(std::istream& stream, std::string& str);
+    bool process_quoted(std::istream& stream, std::string& str);
+
 protected:
     Geo_log_listener_weak_ref listener;
 
     Geo_log_consumer(Geo_log_listener* listener);
 
+    bool store_column(const std::string& ip, const BASE::String_vector& columns);
+
+    virtual bool consumer_process(const std::string& line);
     virtual bool consumer_process(const BASE::String_vector& cols) = 0;
 
     void consumer_reset();
@@ -236,6 +243,7 @@ public:
 class Geo_auth_log_consumer : public Geo_log_consumer {
 
 protected:
+    bool consumer_process(const std::string& line);
     bool consumer_process(const BASE::String_vector& cols);
 
 public:

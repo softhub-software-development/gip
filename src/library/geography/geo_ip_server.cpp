@@ -578,6 +578,77 @@ void Geo_log_consumer::consumer_reset()
     listener->clear_locations();
 }
 
+bool Geo_log_consumer::consumer_process(const string& line)
+{
+    bool success = true;
+    String_vector cols;
+    stringstream sstream(line);
+    do {
+        if (sstream.eof())
+            break;
+        string str;
+        char head = (char) sstream.peek();
+        switch (head) {
+        default:
+            success = process_element(sstream, str);
+            break;
+        case '[':
+            success = process_bracketed(sstream, str);
+            break;
+        case '"':
+            success = process_quoted(sstream, str);
+            break;
+        }
+        String_util::trim(str);
+        cols.append(str);
+    } while (success);
+    consumer_process(cols);
+    return true;
+}
+
+bool Geo_log_consumer::process_element(istream& stream, string& str)
+{
+    getline(stream, str, ' ');
+    return !str.empty();
+}
+
+bool Geo_log_consumer::process_bracketed(istream& stream, string& str)
+{
+    getline(stream, str, ']');
+    if (str.empty())
+        return false;
+    string tmp;
+    getline(stream, tmp, ' ');
+    str += ']';
+    return true;
+}
+
+bool Geo_log_consumer::process_quoted(istream& stream, string& str)
+{
+    stream.get();
+    getline(stream, str, '"');
+    if (str.empty())
+        return false;
+    string tmp;
+    getline(stream, tmp, ' ');
+    str = '"' + str + '"';
+    return true;
+}
+
+bool Geo_log_consumer::store_column(const string& ip, const String_vector& columns)
+{
+    Address_const_ref addr = Address::create_from_dns_name(ip, 0);
+    if (!addr)
+        return false;
+    Geo_ip_server* server = listener->get_server();
+    Geo_ip_file_database* database = server->get_ip_database();
+    Geo_ip_entry_ref entry = database->find_in_filesystem(addr);
+    if (!entry)
+        return false;
+    listener->store(addr, entry, columns);
+    return true;
+}
+
 //
 // class Geo_access_log_consumer
 //
@@ -592,15 +663,7 @@ bool Geo_access_log_consumer::consumer_process(const String_vector& columns)
     if (ncols < 1)
         return false;
     const string& ip = columns[0];
-    Address_const_ref addr = Address::create_from_dns_name(ip, 0);
-    if (!addr)
-        return true;
-    Geo_ip_server* server = listener->get_server();
-    Geo_ip_file_database* database = server->get_ip_database();
-    Geo_ip_entry_ref entry = database->find_in_filesystem(addr);
-    if (!entry)
-        return true;
-    listener->store(addr, entry, columns);
+    store_column(ip, columns);
     return true;
 }
 
@@ -610,6 +673,11 @@ bool Geo_access_log_consumer::consumer_process(const String_vector& columns)
 
 Geo_auth_log_consumer::Geo_auth_log_consumer(Geo_log_listener* listener) : Geo_log_consumer(listener)
 {
+}
+
+bool Geo_auth_log_consumer::consumer_process(const string& line)
+{
+    return Geo_log_consumer::consumer_process(line);
 }
 
 bool Geo_auth_log_consumer::consumer_process(const String_vector& columns)
@@ -626,15 +694,7 @@ bool Geo_auth_log_consumer::consumer_process(const String_vector& columns)
     if (ip_idx < 0)
         return false;
     const string& ip = columns[ip_idx];
-    Address_const_ref addr = Address::create_from_dns_name(ip, 0);
-    if (!addr)
-        return true;
-    Geo_ip_server* server = listener->get_server();
-    Geo_ip_file_database* database = server->get_ip_database();
-    Geo_ip_entry_ref entry = database->find_in_filesystem(addr);
-    if (!entry)
-        return true;
-    listener->store(addr, entry, columns);
+    store_column(ip, columns);
     return true;
 }
 

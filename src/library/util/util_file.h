@@ -31,9 +31,6 @@ class File_observer : public BASE::Object<> {
     ularge stream_ino;
     IFile_consumer_ref consumer;
 
-    bool process_log_element(std::istream& stream, std::string& str);
-    bool process_log_bracketed(std::istream& stream, std::string& str);
-    bool process_log_quoted(std::istream& stream, std::string& str);
     bool process_log_line(const std::string& line);
     bool process_log_file(std::istream& stream);
     bool process_tail(const std::string& filepath);
@@ -53,7 +50,7 @@ public:
 class IFile_consumer : public BASE::Interface {
 
 public:
-    virtual bool consumer_process(const BASE::String_vector& cols) = 0;
+    virtual bool consumer_process(const std::string& line) = 0;
     virtual void consumer_reset() = 0;
 };
 

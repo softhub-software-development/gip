@@ -56,67 +56,10 @@ bool File_observer::process_log_file(istream& stream)
     bool success = true;
     string line;
     while (success && !stream.eof() && getline(stream, line)) {
-        success = process_log_line(line);
+        success = consumer->consumer_process(line);
         stream_pos = stream.tellg();
     }
     return success;
-}
-
-bool File_observer::process_log_line(const string& line)
-{
-    bool success = true;
-    String_vector cols;
-    stringstream sstream(line);
-    do {
-        if (sstream.eof())
-            break;
-        string str;
-        char head = (char) sstream.peek();
-        switch (head) {
-        default:
-            success = process_log_element(sstream, str);
-            break;
-        case '[':
-            success = process_log_bracketed(sstream, str);
-            break;
-        case '"':
-            success = process_log_quoted(sstream, str);
-            break;
-        }
-        String_util::trim(str);
-        cols.append(str);
-    } while (success);
-    consumer->consumer_process(cols);
-    return true;
-}
-
-bool File_observer::process_log_element(istream& stream, string& str)
-{
-    getline(stream, str, ' ');
-    return !str.empty();
-}
-
-bool File_observer::process_log_bracketed(istream& stream, string& str)
-{
-    getline(stream, str, ']');
-    if (str.empty())
-        return false;
-    string tmp;
-    getline(stream, tmp, ' ');
-    str += ']';
-    return true;
-}
-
-bool File_observer::process_log_quoted(istream& stream, string& str)
-{
-    stream.get();
-    getline(stream, str, '"');
-    if (str.empty())
-        return false;
-    string tmp;
-    getline(stream, tmp, ' ');
-    str = '"' + str + '"';
-    return true;
 }
 
 bool File_observer::process_tail(const string& filepath)
@@ -151,7 +94,7 @@ bool File_observer::process_tail_lines(const string& filepath)
         string line;
         stream.seekg(stream_pos, ios::beg);
         while (!stream.eof() && getline(stream, line)) {
-            process_log_line(line);
+            consumer->consumer_process(line);
             stream_pos = stream.tellg();
         }
     }

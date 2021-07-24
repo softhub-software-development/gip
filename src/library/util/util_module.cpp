@@ -193,10 +193,7 @@ class Log_consumer : public BASE::Object<IFile_consumer> {
 public:
     Log_consumer() {}
 
-    bool consumer_process(const String_vector& columns) {
-        return true;
-    }
-
+    bool consumer_process(const string& line) { return true; }
     void consumer_reset() {}
 };
 

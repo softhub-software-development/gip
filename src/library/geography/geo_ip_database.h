@@ -177,10 +177,10 @@ public:
 class Geo_directory_functor : public HAL::Directory_functor {
 
     Geo_ip_entry_ref ip_entry;
-    unsigned value;
+    unsigned ip_num;
 
 public:
-    Geo_directory_functor(unsigned value) : ip_entry(new Geo_ip_entry()), value(value) {}
+    Geo_directory_functor(unsigned ip_num) : ip_entry(new Geo_ip_entry()), ip_num(ip_num) {}
 
     Geo_ip_entry_ref get_ip_entry() { return ip_entry; }
     bool is_interrupted() const;

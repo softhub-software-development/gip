@@ -40,9 +40,9 @@ Geo_ip_range::Geo_ip_range(byte len, unsigned a, unsigned b) : len(len)
     }
 }
 
-bool Geo_ip_range::in_range(unsigned value) const
+bool Geo_ip_range::in_range(unsigned ip) const
 {
-    return lo <= value && value <= hi;
+    return lo <= ip && ip <= hi;
 }
 
 void Geo_ip_range::serialize(BASE::Serializer* serializer) const
@@ -68,9 +68,7 @@ bool Geo_ip_range::operator<(const Geo_ip_range& obj) const
 
 bool Geo_ip_range::operator==(const Geo_ip_range& obj) const
 {
-    if (len != obj.len)
-        return false;
-    return lo == obj.lo && hi == obj.hi;
+    return len == obj.len && lo == obj.lo && hi == obj.hi;
 }
 
 void Geo_ip_range::stringify(std::ostream& stream, unsigned ip4)
@@ -393,7 +391,7 @@ bool Geo_directory_functor::operator()(const Directory* directory, struct dirent
         Stream_deserializer deserializer(file);
         ip_entry->deserialize(&deserializer);
         const Geo_ip_range& range = ip_entry->get_range();
-        keep_on = !range.in_range(value);
+        keep_on = !range.in_range(ip_num);
     } catch (Exception& ex) {
         clog << "failed to read " << filename << endl;
     }
