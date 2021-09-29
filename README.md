@@ -32,11 +32,12 @@ IMPORTANT: The "geo-ip" directory holds a lot of sub directories and files, ther
 with a high number of inodes. Make sure to check the log files at "/var/tmp/gip/log/*.log" for error messages. Issue
 a "df -i" to check if the filesystem ran out of inodes.
 
+REMARK: To minimize the memory usage, gip does not hold all ip-ranges in memory but rather fetches them from the file system.
+Therefore it first creates a directory-tree holding the ip-ranges used for subsequent lookups.
+
 To run the gip server, lauch gip without parameters or use the gip.sh script to lauch the server then point your
 browser to "http://localhost:10101/gip". The gip server monitors "/var/log/apache2/access.log" for web accesses and
 "/var/log/auth.log" for potential fraudulent failed login attempts.
-
-See the supplied php scripts to tunnel through your firewall. TODO: refine this.
 
 Download the geo ip dataset "IP2Location LITE IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE"
 from here: https://lite.ip2location.com/ip2location-lite see "Free Databases", DB11-LITE.
@@ -64,14 +65,14 @@ usage: gip [-C] [-c] [-g] [-h] [-tT] [ip-address-or-domain ...]<br/>
 <br/>
 <h3>Print only the country:</h3>
 <p># gip -C softhub.com</p>
-softhub.com, Germany
+91.65.13.31 "Germany"
 <br/>
 <h3>Print the route:</h3>
 <p># gip -t google.com</p>
 91.65.9.254 Berlin, Berlin, Germany<br/>
 145.254.3.66 Eschborn, Hessen, Germany<br/>
 72.14.194.138 Mountain View, California, United States<br/>
-<h3>Print the geo coordinates:</h3>
+<h3>Print the geo coordinates: (which can be pasted into Google Maps)</h3>
 <p># gip -g softhub.com</p>
 52.5244 13.4105
 <br/>
