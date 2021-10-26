@@ -34,6 +34,8 @@ namespace NET {
 Socket::Socket() : socket(INVALID_SOCKET)
 #ifdef PLATFORM_LINUX
   , send_flags(0)
+#elif defined PLATFORM_WIN
+  , non_blocking(false)
 #endif
 {
 }
@@ -41,6 +43,8 @@ Socket::Socket() : socket(INVALID_SOCKET)
 Socket::Socket(int family, int type, int protocol) : socket(::socket(family, type, protocol))
 #ifdef PLATFORM_LINUX
   , send_flags(0)
+#elif defined PLATFORM_WIN
+  , non_blocking(false)
 #endif
 {
 }
@@ -48,6 +52,8 @@ Socket::Socket(int family, int type, int protocol) : socket(::socket(family, typ
 Socket::Socket(SOCKET socket) : socket(socket)
 #ifdef PLATFORM_LINUX
   , send_flags(0)
+#elif defined PLATFORM_WIN
+  , non_blocking(false)
 #endif
 {
 }
@@ -66,7 +72,7 @@ Status Socket::bind(const Address* address)
     int result = ::bind(socket, &addr, addr_len);
 #ifdef PLATFORM_WIN
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #endif
     return result == 0 ? SUCCESS : BIND_ERR;
 }
@@ -77,7 +83,7 @@ Status Socket::listen(int back_log)
     int result = ::listen(socket, back_log);
 #ifdef PLATFORM_WIN
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #endif
     return result == 0 ? SUCCESS : LISTEN_ERR;
 }
@@ -90,9 +96,24 @@ Status Socket::connect(const Address* address)
     int result = ::connect(socket, &addr, addr_len);
 #ifdef PLATFORM_WIN
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #endif
     return result == 0 ? SUCCESS : CONNECT_ERR;
+}
+
+Status Socket::close()
+{
+    if (socket == INVALID_SOCKET)
+        return SUCCESS;
+#ifdef PLATFORM_WIN
+    int result = ::closesocket(socket);
+    if (result == SOCKET_ERROR)
+        result = ::WSAGetLastError();
+#else
+    int result = ::close(socket);
+#endif
+//  socket = INVALID_SOCKET;
+    return result == 0 ? SUCCESS : CLOSE_ERR;
 }
 
 Status Socket::reusable(bool state)
@@ -104,7 +125,7 @@ Status Socket::reusable(bool state)
     int result = ::setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, buf, buf_len);
 #ifdef PLATFORM_WIN
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #endif
     return result == 0 ? SUCCESS : OPTION_ERR;
 }
@@ -123,7 +144,7 @@ Status Socket::no_sig_pipe(int state)
 #elif defined PLATFORM_WIN
     // TODO: SO_NOSIGPIPE not defined on Windows
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #endif
     return result == 0 ? SUCCESS : OPTION_ERR;
 }
@@ -137,7 +158,7 @@ Status Socket::set_send_timeout(int msec)
     tv.tv_sec = msec / 1000;
     tv.tv_usec = msec % 1000 * 1000;
 #endif
-    int result = setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (char*) &tv, sizeof tv);
+    int result = ::setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (char*) &tv, sizeof tv);
     return result == 0 ? SUCCESS : OPTION_ERR;
 }
 
@@ -150,16 +171,21 @@ Status Socket::set_recieve_timeout(int msec)
     tv.tv_sec = msec / 1000;
     tv.tv_usec = msec % 1000 * 1000;
 #endif
-    int result = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (char*) &tv, sizeof tv);
+    int result = ::setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (char*) &tv, sizeof tv);
     return result == 0 ? SUCCESS : OPTION_ERR;
 }
 
 void Socket::set_non_blocking(bool state)
 {
-#ifndef PLATFORM_WIN
-    int flags = fcntl(socket, F_GETFL, 0);
+#ifdef PLATFORM_WIN
+	u_long mode = state;
+	int err = ::ioctlsocket(socket, FIONBIO, &mode);
+    assert(err == 0);
+	non_blocking = state;
+#else
+    int flags = ::fcntl(socket, F_GETFL, 0);
     assert(flags != -1);
-    flags = fcntl(socket, F_SETFL, state ? (flags | O_NONBLOCK) : (flags & ~O_NONBLOCK));
+    flags = ::fcntl(socket, F_SETFL, state ? (flags | O_NONBLOCK) : (flags & ~O_NONBLOCK));
     assert(flags != -1);
 #endif
 }
@@ -167,27 +193,18 @@ void Socket::set_non_blocking(bool state)
 bool Socket::is_non_blocking() const
 {
 #ifdef PLATFORM_WIN
-    return false;
+    return non_blocking;
 #else
-    int flags = fcntl(socket, F_GETFL, 0);
+    int flags = ::fcntl(socket, F_GETFL, 0);
     assert(flags != -1);
     return flags & O_NONBLOCK;
 #endif
 }
 
-Status Socket::close()
+bool Socket::report_error(int* val) const
 {
-    if (socket == INVALID_SOCKET)
-        return SUCCESS;
-#ifdef PLATFORM_WIN
-    int result = ::closesocket(socket);
-    if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
-#else
-    int result = ::close(socket);
-#endif
-//  socket = INVALID_SOCKET;
-    return result == 0 ? SUCCESS : CLOSE_ERR;
+    socklen_t siz = sizeof(int);
+    return ::getsockopt(socket, SOL_SOCKET, SO_ERROR, (char*) val, &siz) >= 0;
 }
 
 int Socket::send(const char* buf, int len)
@@ -231,6 +248,21 @@ void Socket::find_all_interfaces(Addresses& addresses, int port)
 #endif
 }
 
+void Socket::report_last_error()
+{
+#ifdef PLATFORM_WIN
+    char* s = NULL;
+    int err = ::WSAGetLastError();
+    ::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, err, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPSTR) &s, 0, NULL);
+    std::cerr << err << ": " << s << std::endl;
+    ::LocalFree(s);
+#else
+    char* s = strerror(errno);
+    std::cerr << errno << ": " << s << std::endl;
+#endif
+}
+
 //
 // class Socket_tcp
 //
@@ -239,17 +271,13 @@ Socket_tcp::Socket_tcp() : Socket(AF_INET, SOCK_STREAM, IPPROTO_IP)
 {
 }
 
-void Socket_tcp::init_fd_set(fd_set* set)
-{
-    FD_SET(socket, set);
-}
-
-Status Socket_tcp::select(fd_set* set, unsigned timeout_in_usec)
+Status Socket_tcp::select(fd_set* fds, unsigned timeout_in_usec)
 {
     struct timeval tv;
     tv.tv_sec = timeout_in_usec / 1000000;
     tv.tv_usec = timeout_in_usec % 1000000;
-    int sel_res = ::select(FD_SETSIZE, set, NULL, NULL, &tv);
+    FD_SET(socket, fds);
+    int sel_res = ::select(FD_SETSIZE, fds, NULL, NULL, &tv);
     return sel_res >= 0 ? SUCCESS : SELECT_ERR;
 }
 
@@ -295,7 +323,7 @@ Socket_tcp_secure_client::Socket_tcp_secure_client(SOCKET socket) : Socket_tcp(s
 {
     SSL* ssl = Net_module::module.instance->get_client_ssl_protocol();
     assert(ssl);
-    SSL_set_fd(ssl, socket);
+    ::SSL_set_fd(ssl, socket);
 }
 
 Socket_tcp_secure_client::~Socket_tcp_secure_client()
@@ -331,7 +359,7 @@ Status Socket_tcp_secure_client::accept(Address* address, Socket_tcp_ref& accept
 #ifdef _DEBUG
     if (status != 0) {
         char err_buf[256];
-        int err = SSL_get_error(ssl, status);
+        int err = ::SSL_get_error(ssl, status);
         ERR_error_string_n(err, err_buf, 256);
         cout << "cs accept (" << err << ") " << err_buf << endl;
     }
@@ -349,7 +377,7 @@ int Socket_tcp_secure_client::send(const char* buf, int len)
 #ifdef _DEBUG
     if (status < 0) {
         char err_buf[256];
-        int err = SSL_get_error(ssl, status);
+        int err = ::SSL_get_error(ssl, status);
         ERR_error_string_n(err, err_buf, 256);
         cout << "cs send (" << err << ") " << err_buf << endl;
     }
@@ -366,7 +394,7 @@ int Socket_tcp_secure_client::recv(char* buf, int len)
 #ifdef _DEBUG
     if (status < 0) {
         char err_buf[256];
-        int err = SSL_get_error(ssl, status);
+        int err = ::SSL_get_error(ssl, status);
         ERR_error_string_n(err, err_buf, 256);
         cout << "cs recv (" << err << ") " << err_buf << endl;
     }
@@ -381,18 +409,18 @@ int Socket_tcp_secure_client::recv(char* buf, int len)
 Socket_tcp_secure_server::Socket_tcp_secure_server() : Socket_tcp(), ssl(0)
 {
     SSL_CTX* ctx = Net_module::module.instance->get_ssl_server_ctx();
-    ssl = SSL_new(ctx);
-    SSL_set_fd(ssl, socket);
-    SSL_set_accept_state(ssl);
+    ssl = ::SSL_new(ctx);
+    ::SSL_set_fd(ssl, socket);
+    ::SSL_set_accept_state(ssl);
     set_non_blocking(false);
 }
 
 Socket_tcp_secure_server::Socket_tcp_secure_server(SOCKET socket) : Socket_tcp(socket)
 {
     SSL_CTX* ctx = Net_module::module.instance->get_ssl_server_ctx();
-    ssl = SSL_new(ctx);
-    SSL_set_fd(ssl, socket);
-    SSL_set_accept_state(ssl);
+    ssl = ::SSL_new(ctx);
+    ::SSL_set_fd(ssl, socket);
+    ::SSL_set_accept_state(ssl);
     set_non_blocking(false);
 }
 
@@ -417,8 +445,8 @@ Status Socket_tcp_secure_server::accept(Address* address, Socket_tcp_ref& accept
 #ifdef _DEBUG
     if (status != 1) {
         char err_buf[256];
-        int err = SSL_get_error(ssl, status);
-        ERR_error_string_n(err, err_buf, 256);
+        int err = ::SSL_get_error(ssl, status);
+        ::ERR_error_string_n(err, err_buf, 256);
         cout << "ss accept: " << status << ": " << err << ": " << err_buf << endl;
     }
 #endif
@@ -435,15 +463,15 @@ int Socket_tcp_secure_server::send(const char* buf, int len)
     int status;
     int err = 1;
     do {
-        status = SSL_write(ssl, buf, len);
+        status = ::SSL_write(ssl, buf, len);
         if (status <= 0)
-            err = SSL_get_error(ssl, status);
+            err = ::SSL_get_error(ssl, status);
     } while (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE);
 #ifdef _DEBUG
     if (status < 0) {
         char err_buf[256];
-        int err = SSL_get_error(ssl, status);
-        ERR_error_string_n(err, err_buf, 256);
+        int err = ::SSL_get_error(ssl, status);
+        ::ERR_error_string_n(err, err_buf, 256);
         cout << "ss send: " << status << ": " << err << ": " << err_buf << endl;
     }
 #endif
@@ -462,13 +490,13 @@ int Socket_tcp_secure_server::recv(char* buf, int len)
     do {
         status = SSL_read(ssl, buf, len);
         if (status <= 0)
-            err = SSL_get_error(ssl, status);
+            err = ::SSL_get_error(ssl, status);
     } while (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE);
 #ifdef _DEBUG
     if (status < 0) {
         char err_buf[256];
-        int err = SSL_get_error(ssl, status);
-        ERR_error_string_n(err, err_buf, 256);
+        int err = ::SSL_get_error(ssl, status);
+        ::ERR_error_string_n(err, err_buf, 256);
         cout << "ss recv: " << status << ": " << err << ": " << err_buf << endl;
     }
 #endif
@@ -544,7 +572,7 @@ Status Socket_mcast::join_group(const Address& group, const Address& source)
 #ifdef PLATFORM_WIN
     int result = ::setsockopt(socket, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, buf, size);
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #else
     int result = ::setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, buf, size);
 #endif
@@ -568,10 +596,9 @@ Status Socket_mcast::leave_group(const Address& group, const Address& source)
     int result = ::setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, buf, size);
 #ifdef PLATFORM_WIN
     if (result == SOCKET_ERROR)
-        result = WSAGetLastError();
+        result = ::WSAGetLastError();
 #endif
     return result == 0 ? SUCCESS : OPTION_ERR;
 }
 
 }}
-

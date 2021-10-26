@@ -40,7 +40,8 @@ int main(int argc, char** argv)
     Gip_module::init_logging();
     Geo_module::module.init();
     Geo_module::module.instance->configure(config);
-    if (argc >= 2) {
+    bool listen_on_port = config->get_bool_parameter("p");
+    if (argc >= 2 && !listen_on_port) {
         if (config->get_bool_parameter("h")) {
             usage();
         } else {

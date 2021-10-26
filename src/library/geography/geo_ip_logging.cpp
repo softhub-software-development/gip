@@ -270,7 +270,7 @@ bool Geo_log_consumer::store_column(const string& ip, const String_vector& colum
         return false;
     Geo_ip_server* server = listener->get_server();
     Geo_ip_file_database* database = server->get_ip_database();
-    Geo_ip_entry_ref entry = database->find_in_filesystem(addr);
+    Geo_ip_entry_ref entry = database->find(addr);
     if (!entry)
         return false;
     listener->store(addr, entry, columns);

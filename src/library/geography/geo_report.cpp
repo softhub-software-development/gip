@@ -283,6 +283,6 @@ Geo_report* Geo_report_factory::create_report(const Geo_config* config)
     return report;
 }
 
-const string Geo_report_factory::all_options = "cCgditT";
+const string Geo_report_factory::all_options = "cCdgipstT";
 
 }}

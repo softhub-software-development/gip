@@ -10,6 +10,7 @@
 #define GEOGRAPHY_GEO_IP_DATABASE_H
 
 #include "geo_coordinate.h"
+#include "geo_ip.h"
 #include <net/net.h>
 #include <util/util.h>
 
@@ -19,14 +20,18 @@
 #define DEFAULT_DATA "."
 #endif
 
+#define GEO_IP_DATASET_RANGE_FILES  0
+
 namespace SOFTHUB {
 namespace GEOGRAPHY {
 
 FORWARD_CLASS(Geo_ip_entry);
 FORWARD_CLASS(Geo_ip_database);
-FORWARD_CLASS(Geo_ip_ram_database);
+FORWARD_CLASS(Geo_ip_mem_database);
 FORWARD_CLASS(Geo_ip_file_database);
 DECLARE_ARRAY(Geo_ip_entry_ref, Geo_ip_data);
+
+typedef unsigned Geo_ip_num;
 
 //
 // class Geo_ip_range
@@ -35,8 +40,8 @@ DECLARE_ARRAY(Geo_ip_entry_ref, Geo_ip_data);
 class Geo_ip_range {
 
     byte len;
-    unsigned lo;
-    unsigned hi;
+    Geo_ip_num lo;
+    Geo_ip_num hi;
 
     static void stringify(std::ostream& stream, unsigned ip4);
 
@@ -45,8 +50,8 @@ public:
     Geo_ip_range(byte len, unsigned a, unsigned b);
 
     byte get_length() const { return len; }
-    unsigned get_lower() const { return lo; }
-    unsigned get_upper() const { return hi; }
+    Geo_ip_num get_lower() const { return lo; }
+    Geo_ip_num get_upper() const { return hi; }
     bool in_range(unsigned value) const;
     void serialize(BASE::Serializer* serializer) const;
     void deserialize(BASE::Deserializer* deserializer);
@@ -125,10 +130,10 @@ public:
 };
 
 //
-// class Geo_ip_ram_database
+// class Geo_ip_mem_database
 //
 
-class Geo_ip_ram_database : public Geo_ip_database {
+class Geo_ip_mem_database : public Geo_ip_database {
 
     Geo_ip_data_ref data;
 
@@ -137,7 +142,7 @@ class Geo_ip_ram_database : public Geo_ip_database {
     static void next_column(std::istream& stream, std::string& s);
 
 public:
-    Geo_ip_ram_database() : data(new Geo_ip_data()) {}
+    Geo_ip_mem_database() : data(new Geo_ip_data()) {}
 
     void configure(BASE::IConfig* config);
     int import(const std::string& filename);
@@ -154,17 +159,18 @@ public:
 
 class Geo_ip_file_database : public Geo_ip_database {
 
-    Geo_ip_entry_ref find_entry(const std::string& path, unsigned ip_num) const;
+    Geo_ip_entry_ref find_in_filesystem(const NET::Address* address) const;
     Geo_ip_entry_ref find_in_filesystem_recursively(const std::string& path, const BASE::String_vector& tokens, int idx) const;
+    Geo_ip_entry_ref find_entry(const std::string& path, Geo_ip_num ip_num) const;
+    Geo_ip_entry_ref find_entry_dict(const std::string& path, Geo_ip_num ip_num) const;
 
-    static unsigned ip_num_from_string_vector(const BASE::String_vector& tokens);
+    static Geo_ip_num ip_num_from_string_vector(const BASE::String_vector& tokens);
 
 public:
     Geo_ip_file_database() {}
 
     void configure(BASE::IConfig* config);
     Geo_ip_entry_ref find(const NET::Address* address) const;
-    Geo_ip_entry_ref find_in_filesystem(const NET::Address* address) const;
     std::string map_language(const Geo_ip_entry* entry) const;
 
     DECLARE_CLASS('sifd');

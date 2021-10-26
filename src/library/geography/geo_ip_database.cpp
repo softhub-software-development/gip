@@ -212,15 +212,15 @@ void Geo_ip_database::define_language(const string& country, const string& state
 String_map Geo_ip_database::language_map;
 
 //
-// class Geo_ip_ram_database
+// class Geo_ip_mem_database
 //
 
-void Geo_ip_ram_database::configure(IConfig* config)
+void Geo_ip_mem_database::configure(IConfig* config)
 {
     Geo_ip_database::configure(config);
 }
 
-int Geo_ip_ram_database::import(const string& filename)
+int Geo_ip_mem_database::import(const string& filename)
 {
     ifstream stream(filename);
     if (!stream.good())
@@ -253,7 +253,7 @@ int Geo_ip_ram_database::import(const string& filename)
     return 0;
 }
 
-int Geo_ip_ram_database::rebuild()
+int Geo_ip_mem_database::rebuild()
 {
     // TODO: this is old code and should be removed
     const string& data_dir = geo_data_dir();
@@ -269,7 +269,7 @@ int Geo_ip_ram_database::rebuild()
     return 0;
 }
 
-Geo_ip_entry_ref Geo_ip_ram_database::find(const Address* address) const
+Geo_ip_entry_ref Geo_ip_mem_database::find(const Address* address) const
 {
 #if _DEBUG_PERF >= 8
     timing.begin();
@@ -286,17 +286,17 @@ Geo_ip_entry_ref Geo_ip_ram_database::find(const Address* address) const
     return found ? entry : nullptr;
 }
 
-void Geo_ip_ram_database::serialize(BASE::Serializer* serializer) const
+void Geo_ip_mem_database::serialize(BASE::Serializer* serializer) const
 {
     serializer->write(data);
 }
 
-void Geo_ip_ram_database::deserialize(BASE::Deserializer* deserializer)
+void Geo_ip_mem_database::deserialize(BASE::Deserializer* deserializer)
 {
     deserializer->read(data);
 }
 
-void Geo_ip_ram_database::next_column(istream& stream, string& s)
+void Geo_ip_mem_database::next_column(istream& stream, string& s)
 {
     string tmp;
     getline(stream, tmp, '"');
@@ -328,7 +328,7 @@ unsigned Geo_ip_file_database::ip_num_from_string_vector(const String_vector& to
     return value;
 }
 
-Geo_ip_entry_ref Geo_ip_file_database::find_entry(const string& path, unsigned ip_num) const
+Geo_ip_entry_ref Geo_ip_file_database::find_entry(const string& path, Geo_ip_num ip_num) const
 {
     Directory dir(path);
     Geo_directory_functor functor(ip_num);
@@ -339,14 +339,51 @@ Geo_ip_entry_ref Geo_ip_file_database::find_entry(const string& path, unsigned i
     return entry && entry->is_valid() ? entry : 0;
 }
 
+#if GEO_IP_DATASET_RANGE_FILES
+
+Geo_ip_entry_ref Geo_ip_file_database::find_entry_dict(const string& path, Geo_ip_num ip_num) const
+{
+    const string& filename = path + "/ranges";
+    FILE* file = fopen(filename.c_str(), "r");
+    if (!file)
+        return 0;
+    bool found = false;
+    Geo_ip_entry_ref entry(new Geo_ip_entry());
+    Stream_deserializer deserializer(file);
+    try {
+        while (!feof(file)) {
+            entry->deserialize(&deserializer);
+            const Geo_ip_range& range = entry->get_range();
+            if (range.in_range(ip_num)) {
+                found = true;
+                break;
+            }
+        }
+    } catch (...) {
+        clog << "failed to find range" << endl;
+    }
+    fclose(file);
+    return found ? entry : nullptr;
+}
+
+#endif
+
 Geo_ip_entry_ref Geo_ip_file_database::find_in_filesystem_recursively(const string& path, const String_vector& tokens, int idx) const
 {
     const string& t = tokens[idx];
     const string& sub_dir = File_path::concat(path, t);
     Geo_ip_entry_ref entry = 0;
-    if (File_path::exists(sub_dir))
+    if (File_path::exists(sub_dir)) {
         entry = find_in_filesystem_recursively(sub_dir, tokens, idx+1);
-    return entry ? entry : find_entry(path, ip_num_from_string_vector(tokens));
+        if (entry)
+            return entry;
+    }
+    Geo_ip_num ip_num = ip_num_from_string_vector(tokens);
+#if GEO_IP_DATASET_RANGE_FILES
+    return find_entry_dict(path, ip_num);
+#else
+    return find_entry(path, ip_num);
+#endif
 }
 
 Geo_ip_entry_ref Geo_ip_file_database::find_in_filesystem(const Address* address) const

@@ -33,7 +33,7 @@ Geo_module::Geo_module() : ip_server(new Geo_ip_server()), server_done(false)
 {
     Base_module::module.init();
     Base_module::register_class<Geo_ip_entry>();
-    Base_module::register_class<Geo_ip_ram_database>();
+    Base_module::register_class<Geo_ip_mem_database>();
     Base_module::register_class<Geo_ip_file_database>();
     Hal_module::module.init();
     Net_module::module.init();
@@ -62,7 +62,7 @@ Geo_module::~Geo_module()
     Net_module::module.dispose();
     Hal_module::module.dispose();
     Base_module::unregister_class<Geo_ip_entry>();
-    Base_module::unregister_class<Geo_ip_ram_database>();
+    Base_module::unregister_class<Geo_ip_mem_database>();
     Base_module::unregister_class<Geo_ip_file_database>();
     Base_module::module.dispose();
 }
@@ -101,7 +101,7 @@ void Geo_module::restore_state(Deserializer* deserializer)
 
 void Geo_module::recover_state()
 {
-    Geo_ip_ram_database_ref db(new Geo_ip_ram_database());
+    Geo_ip_mem_database_ref db(new Geo_ip_mem_database());
     db->configure(config);
     const string& data_dir = db->geo_data_dir();
     const string& base_dir = File_path::basepath_of(data_dir);

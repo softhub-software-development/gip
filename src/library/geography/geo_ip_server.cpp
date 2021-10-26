@@ -129,7 +129,7 @@ void Geo_ip_server::serve_location(const Http_service_request* sreq, Http_servic
     const string& ip = parameter_map.get("ip");
     Address_ref addr = Address::create_from_dns_name(ip, 0);
     clog << "location request for " << ip << " " << (addr ? addr->to_string(false) : "-") << endl;
-    Geo_ip_entry_ref entry = addr ? database->find_in_filesystem(addr) : unknown_ip_entry;
+    Geo_ip_entry_ref entry = addr ? database->find(addr) : unknown_ip_entry;
     stringstream content_stream;
     content_stream << "<head>" << endl;
     output_header(content_stream);

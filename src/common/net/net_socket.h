@@ -45,6 +45,8 @@ protected:
     SOCKET socket;
 #ifdef PLATFORM_LINUX
     int send_flags;
+#elif defined PLATFORM_WIN
+	bool non_blocking;
 #endif
 
     Socket(int family, int type, int protocol);
@@ -57,6 +59,7 @@ public:
     SOCKET get_socket_fd() const { return socket; }
     void set_non_blocking(bool state);
     bool is_non_blocking() const;
+    bool report_error(int* val) const;
 
     virtual Status bind(const Address* address);
     virtual Status listen(int back_log = SOMAXCONN);
@@ -70,6 +73,8 @@ public:
     virtual int recv(char* buf, int len);
 
     void find_all_interfaces(Addresses& addresses, int port);
+
+    static void report_last_error();
 };
 
 //
@@ -82,9 +87,7 @@ public:
     Socket_tcp();
     Socket_tcp(SOCKET socket) : Socket(socket) {}
 
-    void init_fd_set(fd_set* set);
-    Status select(fd_set* set, unsigned timeout_in_usec = 0);
-
+    virtual Status select(fd_set* fds, unsigned timeout_in_usec = 0);
     virtual Status accept(Address* address, Socket_tcp_ref& accepting_socket);
 };
 

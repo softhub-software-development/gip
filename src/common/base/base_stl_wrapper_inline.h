@@ -451,11 +451,7 @@ bool Cache<K,V,I>::store(const K& key, const V& val)
     bool result = false;
     const_iterator it = container.find(key);
     const_iterator tail = container.end();
-    if (it != tail) {
-        result = container.insert(key, val);
-        this->list.remove(key);
-        this->list.append(key);
-    } else {
+    if (it == tail) {
         size_t n = this->list.size();
         if (n > 0 && n >= this->capacity) {
             const K& obj = this->list.front();
@@ -471,6 +467,10 @@ bool Cache<K,V,I>::store(const K& key, const V& val)
         }
         this->list.append(key);
         container.insert(key, val);
+    } else {
+        result = container.insert(key, val);
+        this->list.remove(key);
+        this->list.append(key);
     }
 #if UTIL_DEBUG
     size_t m = this->list.size();
