@@ -100,6 +100,49 @@ std::string Generic_geo_position<T>::to_string(Coordinate_format format) const
     return get_latitude().to_string(format) + " " + get_longitude().to_string(format);
 }
 
+//
+// Geo_heading
+//
+
+template <typename T>
+std::string Generic_geo_heading<T>::to_string() const
+{
+    T degrees = Geo_coordinate::to_degrees(radians);
+    std::stringstream stream;
+    stream << degrees;
+    return stream.str();
+}
+
+template <typename T>
+std::string Generic_geo_heading<T>::to_string_rose() const
+{
+    T deg = Geo_coordinate::to_degrees<T>(radians);
+    return to_string_rose(deg);
+}
+
+template <typename T>
+std::string Generic_geo_heading<T>::to_string_rose(T deg)
+{
+    std::stringstream stream;
+    if (deg > 337.5 || deg < 22.5)
+        stream << "N";
+    if (22.5 < deg && deg < 67.5)
+        stream << "NE";
+    if (67.5 < deg && deg < 112.5)
+        stream << "E";
+    if (112.5 < deg && deg < 157.5)
+        stream << "SE";
+    if (157.5 < deg && deg < 202.5)
+        stream << "S";
+    if (202.5 < deg && deg < 247.5)
+        stream << "SW";
+    if (247.5 < deg && deg < 292.5)
+        stream << "W";
+    if (292.5 < deg && deg < 337.5)
+        stream << "NW";
+    return stream.str();
+}
+
 }}
 
 #endif

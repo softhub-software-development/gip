@@ -36,6 +36,12 @@ T Geo_coordinate::to_radians(double degree)
     return degree / 180 * M_PI;
 }
 
+template <typename T>
+T Geo_coordinate::to_degrees(double radians)
+{
+    return radians * 180 / M_PI;
+}
+
 }}
 
 #endif

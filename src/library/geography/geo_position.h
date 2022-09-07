@@ -27,8 +27,7 @@ class Generic_geo_position {
     T lambda;
 
 public:
-    Generic_geo_position() : phi(0), lambda(0) {}
-    Generic_geo_position(T phi, T lambda) : phi(phi), lambda(lambda) {}
+    Generic_geo_position(T phi = 0, T lambda = 0) : phi(phi), lambda(lambda) {}
 
     T get_phi() const { return phi; }
     T get_lambda() const { return lambda; }
@@ -45,7 +44,26 @@ public:
     static const double EARTH_RADIUS_IN_NAUTICAL_MILES;
 };
 
+//
+// Geo_heading
+//
+
+template <typename T>
+class Generic_geo_heading {
+
+    T radians;
+
+public:
+    Generic_geo_heading(T radians) : radians(radians) {}
+
+    std::string to_string() const;
+    std::string to_string_rose() const;
+
+    static std::string to_string_rose(T degree);
+};
+
 typedef Generic_geo_position<float> Geo_position;
+typedef Generic_geo_heading<float> Geo_heading;
 
 }}
 

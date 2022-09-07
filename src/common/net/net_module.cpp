@@ -61,10 +61,10 @@ Net_module::Net_module()
     status = WSAStartup(MAKEWORD(2, 0), &wsa_data) == 0 ? SUCCESS : INIT_ERR;
 #endif
 #if FEATURE_NET_SSL
-    ERR_load_crypto_strings();
-    SSL_load_error_strings();
-    SSL_library_init();
-    OpenSSL_add_all_algorithms();
+//  ERR_load_crypto_strings();
+//  SSL_load_error_strings();
+//  SSL_library_init();
+//  OpenSSL_add_all_algorithms();
     init_client_context();
     init_server_context();
     client_ssl = SSL_new(client_ctx);
@@ -86,10 +86,10 @@ Net_module::~Net_module()
     SSL_free(client_ssl);
     SSL_shutdown(server_ssl);
     SSL_free(server_ssl);
-    ERR_free_strings();
+//  ERR_free_strings();
     SSL_CTX_free(client_ctx);
     SSL_CTX_free(server_ctx);
-    EVP_cleanup();
+//  EVP_cleanup();
 #endif
 #ifdef PLATFORM_WIN
     WSACleanup();

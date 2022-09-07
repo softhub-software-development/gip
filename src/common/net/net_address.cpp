@@ -390,4 +390,3 @@ const std::string Address_ip4::to_string(bool with_port_number) const
 }
 
 }}
-

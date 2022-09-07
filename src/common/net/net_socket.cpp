@@ -254,7 +254,7 @@ void Socket::report_last_error()
     char* s = NULL;
     int err = ::WSAGetLastError();
     ::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, err, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPSTR) &s, 0, NULL);
+        NULL, err, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPWSTR) &s, 0, NULL);
     std::cerr << err << ": " << s << std::endl;
     ::LocalFree(s);
 #else

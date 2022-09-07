@@ -44,6 +44,7 @@ public:
     template <typename T> T to_degrees() const;
     template <typename T> T to_radians() const;
     template <typename T> static T to_radians(double degree);
+    template <typename T> static T to_degrees(double radians);
 
     short get_hours() const { return hours; }
     short get_minutes() const { return minutes; }
