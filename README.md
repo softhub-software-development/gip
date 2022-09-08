@@ -78,6 +78,7 @@ usage: gip [-C] [-c] [-g] [-h] [-tT] [ip-address-or-domain ...]<br/>
 <br/>
 <h3>Also very useful is using gip with awk</h3>
 <p>cat /var/log/apache2/access.log | awk '{ system("gip "$1) }'</p>
+<br/>
 ...
 20.92.226.231 "Redmond, Washington, United States of America"
 192.241.221.14 "San Francisco, California, United States of America"
