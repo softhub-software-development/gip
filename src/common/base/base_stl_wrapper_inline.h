@@ -9,6 +9,9 @@
 #ifndef BASE_STL_WRAPPER_INLINE_H
 #define BASE_STL_WRAPPER_INLINE_H
 
+#include <algorithm>
+#include <iostream>
+
 namespace SOFTHUB {
 namespace BASE {
 
@@ -545,6 +548,97 @@ void Cache<K,V,I>::touch(const K& key)
 }
 
 template <typename K, typename V, typename I> V Cache<K,V,I>::null;
+
+//
+// class Ring_buffer
+//
+
+template <typename T>
+Ring_buffer<T>::Ring_buffer(unsigned size) :
+    elements(size ? new T[size] : nullptr), head(0), tail(0), size(size), count(0)
+{
+}
+
+template <typename T>
+Ring_buffer<T>::~Ring_buffer()
+{
+    delete[] elements;
+}
+
+template <typename T>
+void Ring_buffer<T>::resize(unsigned size)
+{
+    assert(!this->elements);
+    this->elements = new T[size];
+    this->size = size;
+}
+
+template <typename T>
+void Ring_buffer<T>::reset()
+{
+    head = 0;
+    tail = 0;
+    count = 0;
+}
+
+template <typename T>
+void Ring_buffer<T>::append(const T& element)
+{
+    assert(size > 0);
+    assert(tail < size);
+    elements[tail++] = element;
+    tail %= size;
+    if (is_full())
+        head = ++head % size;
+    else
+        count++;
+}
+
+template <typename T>
+T Ring_buffer<T>::remove()
+{
+    assert(size > 0 && !is_empty());
+    assert(head < size);
+    const T& element = elements[head++];
+    head %= size;
+    assert(count > 0);
+    count--;
+    return element;
+}
+
+template <typename T>
+T Ring_buffer<T>::average() const
+{
+    assert(size > 0 && !is_empty());
+    assert(head < size);
+    assert(tail < size);
+    T sum = 0;
+    for (unsigned i = 0; i < count; i++)
+        sum += elements[(head + i) % size];
+    return sum / count;
+}
+
+#if CPLUSPLUS_11
+
+template <typename T>
+T Ring_buffer<T>::average_eliminate_extremes() const
+{
+    T av = average();
+    unsigned* indices = new unsigned[count];
+    for (unsigned i = 0; i < count; i++)
+        indices[i] = i;
+    std::sort(indices, &indices[count], [this, av](int a, int b) -> bool {
+        return fabs(av - elements[(head + a) % size]) < fabs(av - elements[(head + b) % size]);
+    });
+    T sum = 0;
+    unsigned n = count / 2;
+    for (unsigned i = 0; i < n; i++)
+        sum += elements[(head + indices[i]) % size];
+    delete[] indices;
+    return sum / n;
+}
+
+#endif
 
 }}
 

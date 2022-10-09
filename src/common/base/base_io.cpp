@@ -53,20 +53,9 @@ size_t Stream_io<istream>::read(char* buf, size_t len)
     return len;
 }
 
-size_t Stream_io<istream>::read_ooo(char* buf, size_t len)
-{
-    stream.read(buf, len);
-    return len;
-}
-
 void Stream_io<istream>::write(const char* buf, size_t len)
 {
     assert(!"write: invalid io operation");
-}
-
-void Stream_io<istream>::write_ooo(const char* buf, size_t len)
-{
-    assert(!"write_ooo: invalid io operation");
 }
 
 //
@@ -109,18 +98,7 @@ size_t Stream_io<ostream>::read(char* buf, size_t len)
     return 0;
 }
 
-size_t Stream_io<ostream>::read_ooo(char* buf, size_t len)
-{
-    assert(!"invalid io operation");
-    return 0;
-}
-
 void Stream_io<ostream>::write(const char* buf, size_t len)
-{
-    stream.write(buf, len);
-}
-
-void Stream_io<ostream>::write_ooo(const char* buf, size_t len)
 {
     stream.write(buf, len);
 }
@@ -166,17 +144,7 @@ size_t Stream_io<FILE>::read(char* buf, size_t len)
     return fread(buf, sizeof(char), len, file);
 }
 
-size_t Stream_io<FILE>::read_ooo(char* buf, size_t len)
-{
-    return fread(buf, sizeof(char), len, file);
-}
-
 void Stream_io<FILE>::write(const char* buf, size_t len)
-{
-    fwrite(buf, 1, len, file);
-}
-
-void Stream_io<FILE>::write_ooo(const char* buf, size_t len)
 {
     fwrite(buf, 1, len, file);
 }

@@ -18,7 +18,6 @@
 
 using namespace SOFTHUB::BASE;
 using namespace SOFTHUB::HAL;
-using namespace std;
 
 namespace SOFTHUB {
 namespace UTIL {
@@ -59,35 +58,35 @@ static void test_string_utils()
 #if FEATURE_UTIL_ALL && FEATURE_HAL_UTILS
 #ifndef PLATFORM_WIN
     HAL::Timing timing;
-    string m = "München";
-    string t = m;
+    std::string m = "München";
+    std::string t = m;
     String_util::html_encode(t);
     String_util::html_decode(t);
     assert(m == t);
-    string text = "Some text (description)";
+    std::string text = "Some text (description)";
     String_util::html_markup(text, "Some text", " \t\n", "<b>", "</b>");
     assert(text == "<b>Some</b> <b>text</b> (description)");
-    string mucup = "MÜNCHEN";
-    string muc = mucup;
+    std::string mucup = "MÜNCHEN";
+    std::string muc = mucup;
     String_util::to_lower(muc);
     String_util::to_upper(muc);
     assert(mucup == muc);
     timing.begin();
     for (int i = 0; i < 1000; i++) {
-        string hello = "Hällo WÖrld!";
+        std::string hello = "Hällo WÖrld!";
         String_util::to_lower(hello);
         assert(hello == "hällo wörld!");
     }
     long msec = timing.end();
     assert(msec < 1000);
-    string hello2 = "Hällo WÖrlD!";
+    std::string hello2 = "Hällo WÖrlD!";
     size_t hello2_len = String_util::to_lower(hello2, 7, 2);
     assert(hello2_len == 3 && hello2 == "Hällo wörlD!");
-    string subtext1 = "a荒bcd";
+    std::string subtext1 = "a荒bcd";
     size_t sublen = subtext1.length();
     size_t nsub1 = String_util::substring(subtext1, 1, 2);
     assert(sublen == 7 && nsub1 == 4);
-    string subtext2 = "a荒bcd";
+    std::string subtext2 = "a荒bcd";
     size_t nsub2 = String_util::substring(subtext2);
     assert(sublen == 7 && nsub2 == 7);
     String_vector sv;
@@ -105,11 +104,11 @@ static void test_string_utils()
     assert(d2 == 2);
     int d3 = String_util::levenshtein_distance("amberg", "düsseldorf");
     assert(d3 > 2);
-    string s1 = String_util::soundex("anonymous");
-    string s2 = String_util::soundex("annonymus");
+    std::string s1 = String_util::soundex("anonymous");
+    std::string s2 = String_util::soundex("annonymus");
     assert(s1 == s2);
-    string s3 = String_util::soundex("obama");
-    string s4 = String_util::soundex("osama");
+    std::string s3 = String_util::soundex("obama");
+    std::string s4 = String_util::soundex("osama");
     assert(s3 != s4);
     msec = timing.end();
     assert(msec < 100);
@@ -157,23 +156,23 @@ static void test_tmp_base64()
 
 static void test_base64()
 {
-    cout << "test_base64" << endl;
+    std::cout << "test_base64" << std::endl;
     const char* s = "Hello World and some more words to make message longer.";
-    string senc = String_util::base64_encode(s);
-    string sdec = String_util::base64_decode(senc);
+    std::string senc = String_util::base64_encode(s);
+    std::string sdec = String_util::base64_decode(senc);
     assert(strcmp(s, sdec.c_str()) == 0 && sdec == sdec);
     const char* s2 = "MIICXgIBAAKBgQDUk9mVnx4frkdiU2zDoiUSPOdtY4lkCbXMQBLv7rBO1QpiDP2q\n";
-    string senc2 = String_util::base64_encode(s2);
-    string sdec2 = String_util::base64_decode(senc2);
+    std::string senc2 = String_util::base64_encode(s2);
+    std::string sdec2 = String_util::base64_decode(senc2);
     assert(strcmp(s2, sdec2.c_str()) == 0 && sdec2 == sdec2);
 }
 
 static void test_sha()
 {
 #if FEATURE_NET_SSL
-    cout << "test_sha" << endl;
+    std::cout << "test_sha" << std::endl;
     Crypt crypt;
-    string s1, s2, s3;
+    std::string s1, s2, s3;
     crypt.sha256("test", s1);
     crypt.sha256("test", s2);
     crypt.sha256("text", s3);
@@ -193,7 +192,7 @@ class Log_consumer : public BASE::Object<IFile_consumer> {
 public:
     Log_consumer() {}
 
-    bool consumer_process(const string& line) { return true; }
+    bool consumer_process(const std::string& line) { return true; }
     void consumer_reset() {}
 };
 
@@ -202,8 +201,8 @@ static void test_log_reader()
     IConfig* config = Base_module::module.instance->get_configuration();
     if (!config)
         return;
-    string test_data_dir = config->get_test_data_directory();
-    string filepath = File_path::concat(test_data_dir, "test.log");
+    std::string test_data_dir = config->get_test_data_directory();
+    std::string filepath = File_path::concat(test_data_dir, "test.log");
     Log_consumer_ref consumer(new Log_consumer());
     File_observer_ref observer(new File_observer(consumer));
     observer->tail(filepath, false);
@@ -211,11 +210,11 @@ static void test_log_reader()
 
 static void test_string_iterator()
 {
-    const string& str = "abüc";
+    const std::string& str = "abüc";
     String_iterator it(str);
     unsigned c;
     while ((c = it.next()) != 0) {
-        cout << "c: " << c << std::endl;
+        std::cout << "c: " << c << std::endl;
     }
 }
 

@@ -289,6 +289,33 @@ public:
     void touch(const K& key);
 };
 
+//
+// class Ring_buffer
+//
+
+template <typename T>
+class Ring_buffer {
+
+    T* elements;
+    unsigned head;
+    unsigned tail;
+    unsigned size;
+    unsigned count;
+
+public:
+    Ring_buffer(unsigned size = 0);
+    ~Ring_buffer();
+
+    bool is_empty() const { return count == 0; }
+    bool is_full() const { return count == size; }
+    void resize(unsigned size);
+    void reset();
+    void append(const T& element);
+    T remove();
+    T average() const;
+    T average_eliminate_extremes() const;
+};
+
 typedef BASE::List<std::string> String_list;
 typedef BASE::Vector<std::string> String_vector;
 typedef BASE::Hash_set<std::string> String_set;

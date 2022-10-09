@@ -22,15 +22,19 @@ FORWARD_CLASS(Geo_access_server);
 class Geo_module : public BASE::Object<> {
 
     BASE::IConfig_ref config;
+#ifndef NO_GEO_IP
     Geo_ip_server_ref ip_server;
     bool server_done;
+#endif
 
 public:
     Geo_module();
     ~Geo_module();
 
+#ifndef NO_GEO_IP
     Geo_ip_server* get_ip_server() { return ip_server; }
     Geo_ip_database* get_ip_database();
+#endif
     void configure(BASE::IConfig* config);
     void run_service();
     void terminate_service();

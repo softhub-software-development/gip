@@ -23,8 +23,6 @@
 
 #define LENGTH_VALIDATION_BYTE(x) (((x) >> 24) ^ ((x) >> 16) ^ ((x) >> 8) ^ (x))
 
-using namespace std;
-
 namespace SOFTHUB {
 namespace BASE {
 
@@ -294,7 +292,7 @@ void Abstract_serializer::write(quad val)
     write(lval.a[3]);
 }
 
-void Abstract_serializer::write(const string& val)
+void Abstract_serializer::write(const std::string& val)
 {
     size_t slen = val.length();
     if (slen > (size_t) std::numeric_limits<int>::max())
@@ -308,7 +306,7 @@ void Abstract_serializer::write(const string& val)
     write((char*) val.c_str(), ilen);
 }
 
-void Abstract_serializer::write(const wstring& val)
+void Abstract_serializer::write(const std::wstring& val)
 {
     size_t slen = val.length();
     if (slen > (size_t) std::numeric_limits<int>::max())
@@ -382,7 +380,7 @@ void Abstract_deserializer::read(quad& val)
     val = lval.val;
 }
 
-void Abstract_deserializer::read(string& val)
+void Abstract_deserializer::read(std::string& val)
 {
     int slen;
     read(slen);
@@ -396,7 +394,7 @@ void Abstract_deserializer::read(string& val)
     read(&val[0], slen);
 }
 
-void Abstract_deserializer::read(wstring& val)
+void Abstract_deserializer::read(std::wstring& val)
 {
     int slen;
     read(slen);
@@ -429,9 +427,9 @@ void Abstract_deserializer::debug_print(std::ostream& out)
         char cc = 0x20 <= c && c <= 0x7f ? c : '?';
         bool mark = i == n / 2;
         if (mark)
-            out << "-> 0x" << hex << c << " (" << cc << ") <- ";
+            out << "-> 0x" << std::hex << c << " (" << cc << ") <- ";
         else
-            out << "0x" << hex << c << " (" << cc << ") ";
+            out << "0x" << std::hex << c << " (" << cc << ") ";
     }
     out.flush();
 }
@@ -440,7 +438,7 @@ void Abstract_deserializer::debug_print(std::ostream& out)
 // interface Serializable
 //
 
-string Serializable::class_id_to_string(class_id_type cid)
+std::string Serializable::class_id_to_string(class_id_type cid)
 {
     char value[5];
     value[0] = (cid >> 24) & 0xff;
@@ -455,14 +453,14 @@ string Serializable::class_id_to_string(class_id_type cid)
 // class Serialization_exception
 //
 
-string Serialization_exception::get_message() const
+std::string Serialization_exception::get_message() const
 {
-    ostringstream stream;
+    std::ostringstream stream;
     stream << Exception::get_message() << ": " << id << " (" << get_id_string_value() << ") cause: " << std::strerror(err);
     return stream.str();
 }
 
-string Serialization_exception::get_id_string_value() const
+std::string Serialization_exception::get_id_string_value() const
 {
     return Serializable::class_id_to_string(id);
 }

@@ -29,12 +29,17 @@ using namespace std;
 
 BASE::Module<Geo_module> Geo_module::module;
 
-Geo_module::Geo_module() : ip_server(new Geo_ip_server()), server_done(false)
+Geo_module::Geo_module()
+#ifndef NO_GEO_IP
+  : ip_server(new Geo_ip_server()), server_done(false)
+#endif
 {
     Base_module::module.init();
+#ifdef NO_GEO_DB
     Base_module::register_class<Geo_ip_entry>();
     Base_module::register_class<Geo_ip_mem_database>();
     Base_module::register_class<Geo_ip_file_database>();
+#endif
     Hal_module::module.init();
     Net_module::module.init();
     Util_module::module.init();
@@ -61,11 +66,15 @@ Geo_module::~Geo_module()
     Util_module::module.dispose();
     Net_module::module.dispose();
     Hal_module::module.dispose();
+#ifdef NO_GEO_DB
     Base_module::unregister_class<Geo_ip_entry>();
     Base_module::unregister_class<Geo_ip_mem_database>();
     Base_module::unregister_class<Geo_ip_file_database>();
+#endif
     Base_module::module.dispose();
 }
+
+#ifndef NO_GEO_IP
 
 Geo_ip_database* Geo_module::get_ip_database()
 {
@@ -91,6 +100,8 @@ void Geo_module::terminate_service()
     server_done = true;
 }
 
+#endif
+
 void Geo_module::save_state(Serializer* serializer)
 {
 }
@@ -101,6 +112,7 @@ void Geo_module::restore_state(Deserializer* deserializer)
 
 void Geo_module::recover_state()
 {
+#ifndef NO_GEO_IP
     Geo_ip_mem_database_ref db(new Geo_ip_mem_database());
     db->configure(config);
     const string& data_dir = db->geo_data_dir();
@@ -116,6 +128,7 @@ void Geo_module::recover_state()
     } else {
         cout << "cannot create " << data_dir << std::endl;
     }
+#endif
 }
 
 #ifdef _DEBUG
@@ -129,12 +142,14 @@ static void test_coordinates()
 
 void Geo_module::test()
 {
+#ifdef NO_GEO_DB
     Address_ref ip = Address::create("91.64.54.207", 0);
     const Geo_ip_database* db = Geo_module::module.instance->get_ip_database();
     Geo_ip_entry_ref entry = db->find(ip);
     assert(entry ? entry->get_country() == "DE" : true);
     Address_ref ip2 = Address::create("103.148.139.43", 0); // this ip is missing in dataset
     Geo_ip_entry_ref entry2 = db->find(ip2);
+#endif
 //  assert(entry);
 #ifdef NO_GEO_PARSER
     geo_altitude_test();

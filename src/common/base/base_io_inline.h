@@ -32,7 +32,7 @@ large Stream_io<T>::tell() const
 template <typename T>
 void Stream_io<T>::seek(large pos)
 {
-    stream.seekg((std::ostream::streampos) pos);
+    stream.seekg((std::streampos) pos);
 }
 
 template <typename T>
@@ -55,19 +55,7 @@ size_t Stream_io<T>::read(char* buf, size_t len)
 }
 
 template <typename T>
-size_t Stream_io<T>::read_ooo(char* buf, size_t len)
-{
-    return stream.readsome(buf, len);
-}
-
-template <typename T>
 void Stream_io<T>::write(const char* buf, size_t len)
-{
-    stream.write(buf, len);
-}
-
-template <typename T>
-void Stream_io<T>::write_ooo(const char* buf, size_t len)
 {
     stream.write(buf, len);
 }

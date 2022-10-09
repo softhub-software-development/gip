@@ -31,9 +31,7 @@ public:
     virtual bool read(char& c) = 0;
     virtual void write(char c) = 0;
     virtual size_t read(char* buf, size_t len) = 0;
-    virtual size_t read_ooo(char* buf, size_t len) = 0;
     virtual void write(const char* buf, size_t len) = 0;
-    virtual void write_ooo(const char* buf, size_t len) = 0;
 };
 
 //
@@ -54,9 +52,7 @@ public:
     bool read(char& c);
     void write(char c);
     size_t read(char* buf, size_t len);
-    size_t read_ooo(char* buf, size_t len);
     void write(const char* buf, size_t len);
-    void write_ooo(const char* buf, size_t len);
 };
 
 //
@@ -77,9 +73,7 @@ public:
     bool read(char& c);
     void write(char c);
     size_t read(char* buf, size_t len);
-    size_t read_ooo(char* buf, size_t len);
     void write(const char* buf, size_t len);
-    void write_ooo(const char* buf, size_t len);
 };
 
 //
@@ -100,9 +94,7 @@ public:
     bool read(char& c);
     void write(char c);
     size_t read(char* buf, size_t len);
-    size_t read_ooo(char* buf, size_t len);
     void write(const char* buf, size_t len);
-    void write_ooo(const char* buf, size_t len);
 };
 
 //
@@ -122,9 +114,7 @@ public:
     void seek(large pos);
     bool read(char& c);
     void write(char c);
-    size_t read_ooo(char* buf, size_t len);
     size_t read(char* buf, size_t len);
-    void write_ooo(const char* buf, size_t len);
     void write(const char* buf, size_t len);
 };
 

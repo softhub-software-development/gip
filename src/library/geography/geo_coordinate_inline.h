@@ -26,8 +26,7 @@ T Geo_coordinate::to_degrees() const
 template <typename T>
 T Geo_coordinate::to_radians() const
 {
-    T deg = to_degrees<T>();
-    return deg / 180 * M_PI;
+    return to_radians<T>(to_degrees<T>());
 }
 
 template <typename T>

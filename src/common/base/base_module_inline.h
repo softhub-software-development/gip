@@ -23,7 +23,7 @@ namespace BASE {
 
 template <typename T> T* Module<T>::instance;
 
-#if CPLUSPLUS_14
+#if __cplusplus >= CPLUSPLUS_14
 
 template <typename T, typename = void>
 struct has_initializer : std::false_type {};

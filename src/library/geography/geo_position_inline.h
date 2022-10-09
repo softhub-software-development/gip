@@ -1,13 +1,13 @@
 
 /*
  *  geo_position_inline.h
- *  NavAid
  *
  *  Created by Christian Lehner on 8/10/10.
  *  Copyright (c) 2019 Softhub. All rights reserved.
  *
  */
 
+#include "geo_placemark.h"
 #include <math.h>
 #include <util/util_units.h>
 
@@ -35,6 +35,8 @@ Geo_longitude Generic_geo_position<T>::get_longitude() const
 template <typename T>
 T Generic_geo_position<T>::distance_to(const Generic_geo_position<T>& position) const
 {
+    assert(fabs(phi) <= 2 * M_PI && fabs(lambda) <= 2 * M_PI);
+    assert(fabs(position.phi) <= 2 * M_PI && fabs(position.lambda) <= 2 * M_PI);
     double delta = position.lambda - lambda;
     double sin_phi_s = sin(phi);
     double cos_phi_s = cos(phi);
@@ -95,9 +97,25 @@ Generic_geo_position<T> Generic_geo_position<T>::parse(const std::string& lat, c
 }
 
 template <typename T>
+Generic_geo_position<T> Generic_geo_position<T>::create(double lat_in_deg, double lon_in_deg)
+{
+    T phi = Geo_coordinate::to_radians<T>(lat_in_deg);
+    T lambda = Geo_coordinate::to_radians<T>(lon_in_deg);
+    return Generic_geo_position(phi, lambda);
+}
+
+template <typename T>
 std::string Generic_geo_position<T>::to_string(Coordinate_format format) const
 {
     return get_latitude().to_string(format) + " " + get_longitude().to_string(format);
+}
+
+template <typename T>
+std::string Generic_geo_position<T>::find_placemark() const
+{
+    double lat = get_latitude_in_deg();
+    double lon = get_longitude_in_deg();
+    return find_placemark(lat, lon);
 }
 
 //

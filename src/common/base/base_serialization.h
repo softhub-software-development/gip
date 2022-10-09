@@ -205,7 +205,7 @@ public:
     ~Stream_serializer();
 
     large tell() const { return io->tell(); }
-    void seek(large pos) { io->seek((std::ostream::streampos) pos); }
+    void seek(large pos) { io->seek((std::streampos) pos); }
 
     void write(bool val);
     void write(char val);
@@ -242,7 +242,7 @@ public:
     ~Stream_deserializer();
 
     large tell() const { return io->tell(); }
-    void seek(large pos) { io->seek((std::ostream::streampos) pos); }
+    void seek(large pos) { io->seek((std::streampos) pos); }
 
     void read(bool& val);
     void read(char& val);

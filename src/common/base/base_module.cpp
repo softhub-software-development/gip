@@ -21,8 +21,6 @@
 #include <signal.h>
 #include <fstream>
 
-using namespace std;
-
 namespace SOFTHUB {
 namespace BASE {
 
@@ -65,11 +63,11 @@ void Base_module::unregister_all_classes()
     registry->unregister_all_classes();
 }
 
-void Base_module::print_mem(ostream& stream)
+void Base_module::print_mem(std::ostream& stream)
 {
 #ifndef PLATFORM_WIN
     int tsize = 0, resident = 0, share = 0;
-    ifstream buffer("/proc/self/statm");
+    std::ifstream buffer("/proc/self/statm");
     buffer >> tsize >> resident >> share;
     buffer.close();
     long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024;
@@ -88,10 +86,10 @@ void Base_module::print_trace(int depth)
     void** array = new void*[depth];
     int size = backtrace(array, depth);
     char** strings = backtrace_symbols(array, size);
-    stringstream stream;
+    std::stringstream stream;
     print_mem(stream);
     stream << " number of stack frames: " << size;
-    string msg = stream.str();
+    std::string msg = stream.str();
     log_message(ERR, msg);
     for (int i = size - 1; i >= 0; i--) {
         stream.str("");
@@ -145,7 +143,7 @@ DECLARE_ARRAY(Test_class_ref, Test_array);
 
 static void test_serialization()
 {
-    stringstream out(ios_base::out | ios_base::binary);
+    std::stringstream out(std::ios_base::out | std::ios_base::binary);
     Stream_serializer serializer(out);
     bool bool_val = 1;
     serializer.write(bool_val);
@@ -181,10 +179,10 @@ static void test_serialization()
     serializer.write(const_ref_array);
     out.flush();
 
-    string s = out.str();
+    std::string s = out.str();
 
     // read from string
-    stringstream in(s, ios_base::in | ios_base::binary);
+    std::stringstream in(s, std::ios_base::in | std::ios_base::binary);
     Stream_deserializer deserializer(in);
     bool bool_result;
     deserializer.read(bool_result);
@@ -270,13 +268,13 @@ static void test_containers()
     v.append(new Test_class());
     assert(v.contains(element));
 
-    Stack<string> stack;
+    Stack<std::string> stack;
     stack.push("foo");
     stack.push("bar");
     assert(stack.contains("foo"));
     assert(!stack.contains("bla"));
 
-    Hash_array<string,Test_class_ref> assoc;
+    Hash_array<std::string,Test_class_ref> assoc;
     assoc.insert("foo", element);
     Test_class_ref element2(new Test_class());
     assoc.insert("foo", element2);
@@ -290,8 +288,48 @@ static void test_config()
     IConfig_ref config(new Configuration());
     config->set_parameter("foo", "bar");
     config->set_parameter("foo", "bla");
-    string str = config->get_parameter("foo", "blub");
+    std::string str = config->get_parameter("foo", "blub");
     assert(str == "bla");
+}
+
+static void test_ring_buffer()
+{
+    Ring_buffer<double> buffer(3);
+    assert(buffer.is_empty());
+    buffer.append(1);
+    assert(buffer.average() == 1);
+    double a = buffer.remove();
+    assert(a == 1 && buffer.is_empty());
+    buffer.append(1);
+    buffer.append(2);
+    assert(buffer.average() == 1.5);
+    buffer.append(3);
+    assert(buffer.average() == 2);
+    assert(!buffer.is_empty());
+    buffer.append(4);
+    assert(buffer.average() == 3);
+    assert(!buffer.is_empty());
+#if CPLUSPLUS_11
+    double v = buffer.average_eliminate_extremes();
+    assert(v == 3);
+    buffer.append(10);
+    double w = buffer.average_eliminate_extremes();
+    assert(w == 4);
+    buffer.reset();
+    assert(buffer.is_empty());
+    Ring_buffer<double> bigbuf(8);
+    bigbuf.append(1);
+    bigbuf.append(9);
+    bigbuf.append(8);
+    bigbuf.append(6);
+    bigbuf.append(5);
+    bigbuf.append(7);
+    bigbuf.append(4);
+    bigbuf.append(3);
+    bigbuf.append(2);
+    double x = bigbuf.average_eliminate_extremes();
+    assert(x == 5.5);
+#endif
 }
 
 void Base_module::test()
@@ -323,18 +361,20 @@ void Base_module::test()
     IConfig* config = Base_module::module.instance->get_configuration();
     if (!config)
         return;
-    string test_data_dir = config->get_test_data_directory();
-    string filepath = test_data_dir + "test.html";
+    std::string test_data_dir = config->get_test_data_directory();
+    std::string filepath = test_data_dir + "test.html";
 
     FILE* file = fopen(filepath.c_str(), "r");
     //Stream_io<FILE> fio(file);
     if (file)
         fclose(file);
 
-    fstream fs;
+    std::fstream fs;
     fs.open(filepath);
     //Stream_io<> sio(fs);
     fs.close();
+
+    test_ring_buffer();
 }
 
 #endif

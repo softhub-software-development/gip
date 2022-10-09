@@ -44,6 +44,7 @@ NSString* decode_utf8(const std::string& s);
 NSString* decode_mac_roman(const std::string& s);
 NSDictionary* decode_json_dictionary(NSString* str, NSError* err = nil);
 NSString* encode_json_dictionary(NSDictionary* dict, NSError* err = nil);
+std::string find_resource(const std::string& filename, const std::string& type);
 
 #endif
 #else

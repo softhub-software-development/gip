@@ -243,6 +243,8 @@ string Configuration::get_test_data_directory() const
     return "../../../../data/";
 #elif defined PLATFORM_MAC
     return "../../../../../data/";
+#elif defined PLATFORM_IOS
+    return "../../../../../data/";
 #else
     return "~/sen/src/data/";
 #endif

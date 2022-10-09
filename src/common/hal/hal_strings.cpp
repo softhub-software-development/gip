@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "hal_strings.h"
+#include "base/base_platform.h"
 #ifdef PLATFORM_WIN
 #include <windows.h>
 #include <functional>
@@ -59,12 +60,20 @@ void Strings::trim(string& s, int is(int))
 
 void Strings::trim_left(string& s, int is(int))
 {
+#if __cplusplus >= CPLUSPLUS14
+    s.erase(s.begin(), find_if(s.begin(), s.end(), [is](int c) { return !is(c); }));
+#else
     s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int,int>(is))));
+#endif
 }
 
 void Strings::trim_right(string& s, int is(int))
 {
+#if __cplusplus >= CPLUSPLUS14
+    s.erase(find_if(s.rbegin(), s.rend(), [is](int c) { return !is(c); }).base(), s.end());
+#else
     s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int,int>(is))).base(), s.end());
+#endif
 }
 
 #endif

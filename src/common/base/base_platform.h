@@ -43,8 +43,9 @@
 #define DEBUG_STATE false
 #endif
 
-#define CPLUSPLUS_11 (__cplusplus >= 199711L)
-#define CPLUSPLUS_14 (__cplusplus >= 201402L)
+#define CPLUSPLUS_11 199711L
+#define CPLUSPLUS_14 201402L
+#define CPLUSPLUS_17 201703L
 
 typedef enum { ALL, WARN, INFO, ERR } Log_level;
 

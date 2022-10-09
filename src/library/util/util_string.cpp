@@ -25,12 +25,11 @@
 #endif
 
 using namespace SOFTHUB::BASE;
-using namespace std;
 
 namespace SOFTHUB {
 namespace UTIL {
 
-static bool is_numeric(const string& s);
+static bool is_numeric(const std::string& s);
 
 //
 // class Snippet
@@ -47,7 +46,7 @@ Snippet::~Snippet()
     delete[] buf;
 }
 
-void Snippet::snip(const string& text, long ioi, long loi)
+void Snippet::snip(const std::string& text, long ioi, long loi)
 {
     assert(toi_pos == 0 && toi_len == 0);
     long n = (long) text.length();
@@ -99,7 +98,7 @@ void Snippet::restore(Deserializer& deserializer)
 // class String_util
 //
 
-string String_util::limit_to_length(const string& s, size_t n, const string& tail_marker)
+std::string String_util::limit_to_length(const std::string& s, size_t n, const std::string& tail_marker)
 {
     size_t slen = s.length();
     size_t nlen = n - tail_marker.length();
@@ -107,69 +106,77 @@ string String_util::limit_to_length(const string& s, size_t n, const string& tai
     return slen <= n ? s : s.substr(0, nlen) + tail_marker;
 }
 
-string String_util::limit_to_length(const string& s, size_t n, size_t head, size_t tail)
+std::string String_util::limit_to_length(const std::string& s, size_t n, size_t head, size_t tail)
 {
     size_t len = s.length();
     if (len <= n)
         return s;
-    string result = s.substr(0, head);
+    std::string result = s.substr(0, head);
     result += "...";
     result += s.substr(len - tail, tail);
     return result;
 }
 
-void String_util::trim(string& s, int is(int))
+void String_util::trim(std::string& s, int is(int))
 {
     trim_left(s, is);
     trim_right(s, is);
 }
 
-void String_util::trim_left(string& s, int is(int))
+void String_util::trim_left(std::string& s, int is(int))
 {
-    s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int,int>(is))));
+#if __cplusplus >= CPLUSPLUS14
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [is](int c) { return !is(c); }));
+#else
+    s.erase(s.begin(), find_if(s.begin(), s.end(), not1(std::ptr_fun<int,int>(is))));
+#endif
 }
 
-void String_util::trim_right(string& s, int is(int))
+void String_util::trim_right(std::string& s, int is(int))
 {
-    s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int,int>(is))).base(), s.end());
+#if __cplusplus >= CPLUSPLUS14
+    s.erase(std::find_if(s.rbegin(), s.rend(), [is](int c) { return !is(c); }).base(), s.end());
+#else
+    s.erase(find_if(s.rbegin(), s.rend(), not1(std::ptr_fun<int,int>(is))).base(), s.end());
+#endif
 }
 
-size_t String_util::to_upper(string& s, size_t idx, size_t cnt)
+size_t String_util::to_upper(std::string& s, size_t idx, size_t cnt)
 {
     String_state state;
     return state.to_upper_case(s, idx, cnt);
 }
 
-size_t String_util::to_lower(string& s, size_t idx, size_t cnt)
+size_t String_util::to_lower(std::string& s, size_t idx, size_t cnt)
 {
     String_state state;
     return state.to_lower_case(s, idx, cnt);
 }
 
-size_t String_util::find_case_insensitive(const string& s, const string& sub)
+size_t String_util::find_case_insensitive(const std::string& s, const std::string& sub)
 {
-    string s_lower = s;
+    std::string s_lower = s;
     to_lower(s_lower);
-    string sub_lower = sub;
+    std::string sub_lower = sub;
     to_lower(sub_lower);
     return s_lower.find(sub_lower);
 }
 
-size_t String_util::substitute_umlauts(string& s, size_t idx, size_t cnt)
+size_t String_util::substitute_umlauts(std::string& s, size_t idx, size_t cnt)
 {
     String_state state;
     return state.substitute_umlauts(s, idx, cnt);
 }
 
-size_t String_util::substring(string& s, size_t idx, size_t cnt)
+size_t String_util::substring(std::string& s, size_t idx, size_t cnt)
 {
     String_state state;
     return state.substring(s, idx, cnt);
 }
 
-string String_util::escape(const string& s, char q, char e)
+std::string String_util::escape(const std::string& s, char q, char e)
 {
-    stringstream stream;
+    std::stringstream stream;
     for (size_t i = 0; i < s.length(); i++) {
         char c = s[i];
         if (c == q)
@@ -179,34 +186,34 @@ string String_util::escape(const string& s, char q, char e)
     return stream.str();
 }
 
-void String_util::split(const string& s, String_vector& tokens, const string& sep, bool include_empty_tokens)
+void String_util::split(const std::string& s, String_vector& tokens, const std::string& sep, bool include_empty_tokens)
 {
     size_t i = 0, n = s.length();
     while (true) {
         size_t j = s.find_first_of(sep, i);
-        if (j == string::npos) {
+        if (j == std::string::npos) {
             size_t len = n - i;
             if (include_empty_tokens || len > 0) {
-                string sub = s.substr(i, len);
+                std::string sub = s.substr(i, len);
                 tokens.append(sub);
             }
             break;
         }
         size_t len = j - i;
         if (include_empty_tokens || len > 0) {
-            string sub = s.substr(i, len);
+            std::string sub = s.substr(i, len);
             tokens.append(sub);
         }
         i = j + 1;
     }
 }
 
-void String_util::split(const string& s, Substring_vector& tokens, const string& sep, bool include_empty_tokens)
+void String_util::split(const std::string& s, Substring_vector& tokens, const std::string& sep, bool include_empty_tokens)
 {
     size_t i = 0, n = s.length();
     while (true) {
         size_t j = s.find_first_of(sep, i);
-        if (j == string::npos) {
+        if (j == std::string::npos) {
             size_t len = n - i;
             if (include_empty_tokens || len > 0) {
                 Substring sub(s, i, len);
@@ -223,9 +230,9 @@ void String_util::split(const string& s, Substring_vector& tokens, const string&
     }
 }
 
-string String_util::join(const String_vector& v, int max_count, const string& sep)
+std::string String_util::join(const String_vector& v, int max_count, const std::string& sep)
 {
-    string result;
+    std::string result;
     int count = 0;
     String_vector::const_iterator it = v.begin();
     String_vector::const_iterator tail = v.end();
@@ -239,9 +246,9 @@ string String_util::join(const String_vector& v, int max_count, const string& se
     return result;
 }
 
-string String_util::join(const String_set& set, int max_count, const string& sep)
+std::string String_util::join(const String_set& set, int max_count, const std::string& sep)
 {
-    string result;
+    std::string result;
     int count = 0;
     String_set::const_iterator it = set.begin();
     String_set::const_iterator tail = set.end();
@@ -322,9 +329,9 @@ void String_util::base64_decode(const char* s, int count, char* result)
     result[j] = '\0';
 }
 
-string String_util::base64_encode(const string& s)
+std::string String_util::base64_encode(const std::string& s)
 {
-    stringbuf buf;
+    std::stringbuf buf;
     size_t i, len = s.length();
     size_t r = len % 3;
     size_t n = len > r ? len - r : 0;
@@ -356,9 +363,9 @@ string String_util::base64_encode(const string& s)
     return buf.str();
 }
 
-string String_util::base64_decode(const string& s)
+std::string String_util::base64_decode(const std::string& s)
 {
-    stringbuf buf;
+    std::stringbuf buf;
     for (size_t i = 0, n = s.length(); i < n; i += 4) {
         assert(i+3 < n);
         char s0 = s[i];
@@ -379,12 +386,12 @@ string String_util::base64_decode(const string& s)
     return buf.str();
 }
 
-void String_util::html_encode(string& s)
+void String_util::html_encode(std::string& s)
 {
     // TODO: incomplete implementation
-    stringstream stream;
-    string::const_iterator it = s.begin();
-    string::const_iterator tail = s.end();
+    std::stringstream stream;
+    std::string::const_iterator it = s.begin();
+    std::string::const_iterator tail = s.end();
     while (it != tail) {
         char u0 = *it++;
         int v0 = u0 & 0xff;
@@ -415,19 +422,19 @@ void String_util::html_encode(string& s)
     s = stream.str();
 }
 
-void String_util::html_decode(string& s)
+void String_util::html_decode(std::string& s)
 {
     // TODO: incomplete implementation
-    string result;
-    string prefix = "&#";
+    std::string result;
+    std::string prefix = "&#";
     size_t a = 0, b;
-    if ((b = s.find(prefix, a)) != string::npos) {
-        stringstream stream;
+    if ((b = s.find(prefix, a)) != std::string::npos) {
+        std::stringstream stream;
         do {
             size_t c = s.find(';', b);
-            if (c == string::npos || c - b > 6)
+            if (c == std::string::npos || c - b > 6)
                 break;
-            string num_str = s.substr(b + 2, c - b - 2);
+            std::string num_str = s.substr(b + 2, c - b - 2);
             if (!is_numeric(num_str))
                 break;
             int num = atoi(num_str.c_str());
@@ -449,7 +456,7 @@ void String_util::html_decode(string& s)
                 }
             }
             a = c + 1;
-        } while ((b = s.find(prefix, a)) != string::npos);
+        } while ((b = s.find(prefix, a)) != std::string::npos);
         stream << s.substr(a);
         s = stream.str();
     }
@@ -457,11 +464,11 @@ void String_util::html_decode(string& s)
 
 #ifndef PLATFORM_WIN
 
-void String_util::html_markup(string& text, const string& phrase, const string& delim, const string& begin_tag, const string& end_tag)
+void String_util::html_markup(std::string& text, const std::string& phrase, const std::string& delim, const std::string& begin_tag, const std::string& end_tag)
 {
-    stringstream stream;
+    std::stringstream stream;
     String_vector words;
-    string lower_phrase = phrase;
+    std::string lower_phrase = phrase;
     to_lower(lower_phrase);
     split(lower_phrase, words, " \t\n");
     Substring_vector tokens;
@@ -469,11 +476,11 @@ void String_util::html_markup(string& text, const string& phrase, const string& 
     size_t a = 0, b;
     for (size_t i = 0, n = tokens.size(); i < n; i++) {
         Substring sub = tokens[i];
-        string s = sub.get_substring();
-        string lower_s = s;
+        std::string s = sub.get_substring();
+        std::string lower_s = s;
         to_lower(lower_s);
         b = sub.get_position();
-        string pre = text.substr(a, b - a);
+        std::string pre = text.substr(a, b - a);
         if (words.contains(lower_s)) {
             stream << pre << begin_tag << s << end_tag;
         } else {
@@ -486,33 +493,32 @@ void String_util::html_markup(string& text, const string& phrase, const string& 
 
 #endif
 
-string String_util::num_to_string(size_t num)
+std::string String_util::num_to_string(size_t num)
 {
-    stringstream stream;
+    std::stringstream stream;
     stream << num;
     return stream.str();
 }
 
-string String_util::num_to_string(size_t num, int exp)
+std::string String_util::num_to_string(size_t num, int exp)
 {
-    stringstream stream;
-    stream << setw(exp) << setfill('0') << (num % (1 << exp));
+    std::stringstream stream;
+    stream << std::setw(exp) << std::setfill('0') << (num % (1 << exp));
     return stream.str();
 }
 
-string String_util::hash(const std::string& s, int modulo)
+std::string String_util::hash(const std::string& s, int modulo)
 {
-    size_t hash = std::hash<string>()(s) % modulo;
-    stringstream stream;
-    stream << setw(3) << setfill('0') << hash;
+    size_t hash = std::hash<std::string>()(s) % modulo;
+    std::stringstream stream;
+    stream << std::setw(3) << std::setfill('0') << hash;
     return stream.str();
 }
 
-int String_util::levenshtein_distance(const string& s1, const string& s2)
+int String_util::levenshtein_distance(const std::string& s1, const std::string& s2)
 {
     int len1 = (int) s1.size(), len2 = (int) s2.size();
-    vector<int> col(len2+1), prev_col(len2+1);
-
+    std::vector<int> col(len2+1), prev_col(len2+1);
     for (int i = 0; i < (int) prev_col.size(); i++)
         prev_col[i] = i;
     for (int i = 0; i < len1; i++) {
@@ -526,34 +532,47 @@ int String_util::levenshtein_distance(const string& s1, const string& s2)
 
 char String_util::soundex_transform(char c)
 {
-    static const string consonants[6] = { "bfpv", "cgjkqsxz", "dt", "l", "mn", "r" };
+    static const std::string consonants[6] = { "bfpv", "cgjkqsxz", "dt", "l", "mn", "r" };
     for (int i = 0; i < 6; i++)
-        if (consonants[i].find(c) != string::npos)
+        if (consonants[i].find(c) != std::string::npos)
             return i + 1 + '0';
     return c;
 }
 
-string String_util::soundex(const string& s)
+std::string String_util::soundex(const std::string& s)
 {
-    string result;
+    std::string result;
     // validate s
-    if (find_if(s.begin(), s.end(), not1(ptr_fun<int,int>(isalpha))) != s.end())
+#if __cplusplus >= CPLUSPLUS14
+    if (std::find_if(s.begin(), s.end(), [](int c) { return !isalpha(c); }) != s.end())
         return result;
+#else
+    if (std::find_if(s.begin(), s.end(), not1(ptr_fun<int,int>(isalpha))) != s.end())
+        return result;
+#endif
     result.resize(s.length());
+#if __cplusplus >= CPLUSPLUS14
+    transform(s.begin(), s.end(), result.begin(), [](int c) { return tolower(c); });
+#else
     transform(s.begin(), s.end(), result.begin(), ptr_fun<int,int>(tolower));
+#endif
     // convert soundex letters to codes
     transform(result.begin() + 1, result.end(), result.begin() + 1, soundex_transform);
     // collapse adjacent identical digits
     result.erase(unique(result.begin() + 1, result.end()), result.end());
     // remove all non-digits following the first letter
+#if __cplusplus >= CPLUSPLUS14
+    result.erase(remove_if(result.begin() + 1, result.end(), [](int c) { return !isdigit(c); }), result.end());
+#else
     result.erase(remove_if(result.begin() + 1, result.end(), not1(ptr_fun<int,int>(isdigit))), result.end());
+#endif
     result += "000";
     result.resize(4);
     return result;
 }
 
 #if FEATURE_NET_SSL
-void String_util::md5(const string& s, unsigned char digest[16])
+void String_util::md5(const std::string& s, unsigned char digest[16])
 {
     MD5_CTX ctx;
     MD5_Init(&ctx);
@@ -562,7 +581,7 @@ void String_util::md5(const string& s, unsigned char digest[16])
 }
 #endif
 
-static bool is_numeric(const string& s)
+static bool is_numeric(const std::string& s)
 {
     for (size_t i = 0, n = s.length(); i < n; i++)
         if (!isdigit(s[i]))
@@ -605,7 +624,7 @@ bool String_state::operator<<(const char* s)
 // class String_iterator
 //
 
-String_iterator::String_iterator(const string& str) : str(str), offset(0)
+String_iterator::String_iterator(const std::string& str) : str(str), offset(0)
 {
 }
 

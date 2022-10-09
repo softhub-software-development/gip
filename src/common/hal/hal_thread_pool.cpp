@@ -9,7 +9,6 @@ namespace SOFTHUB {
 namespace HAL {
 
 using namespace BASE;
-using namespace std;
 
 //
 // class Pool_thread, TODO: needs rewrite
@@ -132,11 +131,11 @@ void Thread_pool::execute(Runnable* target)
         inc_state(num_jobs);
     } catch (Exception& ex) {
         inc_state(num_errors);
-        stringstream stream;
+        std::stringstream stream;
         stream << "pool thread: " << ex.get_message();
         log_message(ERR, stream.str());
         target->fail(ex);
-    } catch (bad_alloc& ex) {
+    } catch (std::bad_alloc& ex) {
         inc_state(num_errors);
         last_resort();
         log_message(ERR, "pool thread ran out of memory");

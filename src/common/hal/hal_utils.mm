@@ -69,6 +69,14 @@ NSString* encode_json_dictionary(NSDictionary* dict, NSError* err)
     return err ? nil : [NSString stringWithUTF8String : (const char*) [data bytes]];
 }
 
+string find_resource(const string& filename, const string& type)
+{
+    NSString* fnam = decode_utf8(filename);
+    NSString* ftyp = decode_utf8(type);
+	NSString* path = [[NSBundle mainBundle] pathForResource: fnam ofType: ftyp];
+	return [path cStringUsingEncoding: NSASCIIStringEncoding];
+}
+
 string full_user_name()
 {
     return encode_utf8(NSFullUserName());
